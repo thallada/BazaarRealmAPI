@@ -112,10 +112,9 @@ mod filters {
     pub fn get_shop(
         env: Environment,
     ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-        warp::path("shops")
-            .and(with_env(env))
+        warp::path!("shops" / i32)
             .and(warp::get())
-            .and(warp::path::param())
+            .and(with_env(env))
             .and_then(handlers::get_shop)
     }
 
@@ -123,19 +122,18 @@ mod filters {
         env: Environment,
     ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         warp::path("shops")
-            .and(with_env(env))
             .and(warp::post())
             .and(json_body::<Shop>())
+            .and(with_env(env))
             .and_then(handlers::create_shop)
     }
 
     pub fn get_owner(
         env: Environment,
     ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-        warp::path("owners")
-            .and(with_env(env))
+        warp::path!("owners" / i32)
             .and(warp::get())
-            .and(warp::path::param())
+            .and(with_env(env))
             .and_then(handlers::get_owner)
     }
 
@@ -143,10 +141,10 @@ mod filters {
         env: Environment,
     ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         warp::path("owners")
-            .and(with_env(env))
             .and(warp::post())
             .and(json_body::<Owner>())
             .and(warp::addr::remote())
+            .and(with_env(env))
             .and_then(handlers::create_owner)
     }
 
@@ -175,14 +173,14 @@ mod handlers {
     use super::problem::reject_anyhow;
     use super::Environment;
 
-    pub async fn get_shop(env: Environment, id: i32) -> Result<impl Reply, Rejection> {
+    pub async fn get_shop(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
         let shop = Shop::get(&env.db, id).await.map_err(reject_anyhow)?;
         let reply = json(&shop);
         let reply = with_status(reply, StatusCode::OK);
         Ok(reply)
     }
 
-    pub async fn create_shop(env: Environment, shop: Shop) -> Result<impl Reply, Rejection> {
+    pub async fn create_shop(shop: Shop, env: Environment) -> Result<impl Reply, Rejection> {
         let saved_shop = shop.save(&env.db).await.map_err(reject_anyhow)?;
         let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
         let reply = json(&saved_shop);
@@ -191,7 +189,7 @@ mod handlers {
         Ok(reply)
     }
 
-    pub async fn get_owner(env: Environment, id: i32) -> Result<impl Reply, Rejection> {
+    pub async fn get_owner(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
         let owner = Owner::get(&env.db, id).await.map_err(reject_anyhow)?;
         let reply = json(&owner);
         let reply = with_status(reply, StatusCode::OK);
@@ -199,9 +197,9 @@ mod handlers {
     }
 
     pub async fn create_owner(
-        env: Environment,
         owner: Owner,
         remote_addr: Option<SocketAddr>,
+        env: Environment,
     ) -> Result<impl Reply, Rejection> {
         let owner_with_ip = match remote_addr {
             Some(addr) => Owner {
