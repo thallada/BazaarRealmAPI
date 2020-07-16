@@ -10,6 +10,7 @@ use serde::Serialize;
 use sqlx::postgres::PgPool;
 use std::convert::Infallible;
 use std::env;
+use url::Url;
 use warp::Filter;
 
 mod db;
@@ -24,15 +25,17 @@ struct Opts {
 #[derive(Debug, Clone)]
 pub struct Environment {
     pub db: PgPool,
+    pub api_url: Url,
 }
 
 impl Environment {
-    async fn new() -> Result<Environment> {
+    async fn new(api_url: Url) -> Result<Environment> {
         Ok(Environment {
             db: PgPool::builder()
                 .max_size(5)
                 .build(&env::var("DATABASE_URL")?)
                 .await?,
+            api_url,
         })
     }
 }
@@ -58,16 +61,22 @@ async fn main() -> Result<()> {
         return Ok(());
     }
 
-    let env = Environment::new().await?;
+    let host = env::var("HOST").expect("`HOST` environment variable not defined");
+    let host_url = Url::parse(&host).expect("Cannot parse URL from `HOST` environment variable");
+    let api_url = host_url.join("/api/v1")?;
+    let env = Environment::new(api_url).await?;
 
     info!("warp speed ahead!");
 
-    // TODO: need to put everything under /api/v1/
-    let home = warp::path::end().map(|| "Shopkeeper home page");
-    let view_shop = filters::view_shop(env.clone());
+    let home = warp::path!("api" / "v1").map(|| "Shopkeeper home page");
+    let get_shop = filters::get_shop(env.clone());
     let create_shop = filters::create_shop(env.clone());
+    let get_owner = filters::get_owner(env.clone());
+    let create_owner = filters::create_owner(env.clone());
     let routes = create_shop
-        .or(view_shop)
+        .or(get_shop)
+        .or(create_owner)
+        .or(get_owner)
         .or(home)
         .recover(problem::unpack_problem)
         .with(warp::compression::gzip())
@@ -92,14 +101,15 @@ async fn main() -> Result<()> {
 }
 
 mod filters {
+    use serde::de::DeserializeOwned;
     use std::convert::Infallible;
     use warp::{Filter, Rejection, Reply};
 
     use super::handlers;
-    use super::models::Shop;
+    use super::models::{Owner, Shop};
     use super::Environment;
 
-    pub fn view_shop(
+    pub fn get_shop(
         env: Environment,
     ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         warp::path("shops")
@@ -115,8 +125,29 @@ mod filters {
         warp::path("shops")
             .and(with_env(env))
             .and(warp::post())
-            .and(json_body())
+            .and(json_body::<Shop>())
             .and_then(handlers::create_shop)
+    }
+
+    pub fn get_owner(
+        env: Environment,
+    ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+        warp::path("owners")
+            .and(with_env(env))
+            .and(warp::get())
+            .and(warp::path::param())
+            .and_then(handlers::get_owner)
+    }
+
+    pub fn create_owner(
+        env: Environment,
+    ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+        warp::path("owners")
+            .and(with_env(env))
+            .and(warp::post())
+            .and(json_body::<Owner>())
+            .and(warp::addr::remote())
+            .and_then(handlers::create_owner)
     }
 
     fn with_env(
@@ -125,38 +156,73 @@ mod filters {
         warp::any().map(move || env.clone())
     }
 
-    fn json_body() -> impl Filter<Extract = (Shop,), Error = warp::Rejection> + Clone {
+    fn json_body<T>() -> impl Filter<Extract = (T,), Error = warp::Rejection> + Clone
+    where
+        T: Send + DeserializeOwned,
+    {
         warp::body::content_length_limit(1024 * 16).and(warp::body::json())
     }
 }
 
 mod handlers {
+    use ipnetwork::IpNetwork;
+    use std::net::SocketAddr;
+    use warp::http::StatusCode;
+    use warp::reply::{json, with_header, with_status};
     use warp::{Rejection, Reply};
 
-    use super::models::Shop;
+    use super::models::{Owner, Shop};
     use super::problem::reject_anyhow;
     use super::Environment;
 
     pub async fn get_shop(env: Environment, id: i32) -> Result<impl Reply, Rejection> {
-        dbg!(id);
         let shop = Shop::get(&env.db, id).await.map_err(reject_anyhow)?;
-        return Ok(format!("Shop {}: {}.", id, shop.name));
+        return Ok(with_status(json(&shop), StatusCode::OK));
     }
 
     pub async fn create_shop(env: Environment, shop: Shop) -> Result<impl Reply, Rejection> {
-        dbg!(&shop);
-        shop.create(&env.db).await.map_err(reject_anyhow)?;
-        return Ok(format!("Shop {}: {}.", "unknown", &shop.name));
+        let saved_shop = shop.save(&env.db).await.map_err(reject_anyhow)?;
+        let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
+        return Ok(with_status(
+            with_header(json(&saved_shop), "Location", url.as_str()),
+            StatusCode::CREATED,
+        ));
+    }
+
+    pub async fn get_owner(env: Environment, id: i32) -> Result<impl Reply, Rejection> {
+        let owner = Owner::get(&env.db, id).await.map_err(reject_anyhow)?;
+        return Ok(with_status(json(&owner), StatusCode::OK));
+    }
+
+    pub async fn create_owner(
+        env: Environment,
+        owner: Owner,
+        remote_addr: Option<SocketAddr>,
+    ) -> Result<impl Reply, Rejection> {
+        let owner_with_ip = match remote_addr {
+            Some(addr) => Owner {
+                ip_address: Some(IpNetwork::from(addr.ip())),
+                ..owner
+            },
+            None => owner,
+        };
+        let saved_owner = owner_with_ip.save(&env.db).await.map_err(reject_anyhow)?;
+        let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
+        return Ok(with_status(
+            with_header(json(&saved_owner), "Location", url.as_str()),
+            StatusCode::CREATED,
+        ));
     }
 }
 
 mod models {
-    use anyhow::Result;
+    use anyhow::{anyhow, Result};
     use chrono::prelude::*;
-    use http_api_problem::HttpApiProblem;
+    use ipnetwork::IpNetwork;
     use serde::{Deserialize, Serialize};
     use sqlx::postgres::PgPool;
-    use warp::http::StatusCode;
+    use url::Url;
+    use uuid::Uuid;
 
     #[derive(Debug, Serialize, Deserialize, Clone)]
     pub struct Shop {
@@ -173,24 +239,33 @@ mod models {
     }
 
     impl Shop {
-        pub async fn get(db: &PgPool, id: i32) -> Result<Shop> {
+        pub fn url(&self, api_url: &Url) -> Result<Url> {
+            if let Some(id) = self.id {
+                Ok(api_url.join(&format!("/shops/{}", id))?)
+            } else {
+                Err(anyhow!("Cannot get URL for shop with no id"))
+            }
+        }
+
+        pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
             let timer = std::time::Instant::now();
             let result = sqlx::query_as!(Self, "SELECT * FROM shops WHERE id = $1", id)
                 .fetch_one(db)
                 .await?;
             let elapsed = timer.elapsed();
-            dbg!(elapsed);
-            info!("SELECT * FROM shops ... | {:.3?} elapsed", elapsed);
+            debug!("SELECT * FROM shops ... {:.3?}", elapsed);
             Ok(result)
         }
 
-        pub async fn create(&self, db: &PgPool) -> Result<()> {
+        pub async fn save(self, db: &PgPool) -> Result<Self> {
             let timer = std::time::Instant::now();
-            let result = sqlx::query!(
+            let result = sqlx::query_as!(
+                Self,
                 "INSERT INTO shops
                 (name, owner_id, description, is_not_sell_buy, sell_buy_list_id, vendor_id,
                  vendor_gold, created_at, updated_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, now(), now())",
+                VALUES ($1, $2, $3, $4, $5, $6, $7, now(), now())
+                RETURNING *",
                 self.name,
                 self.owner_id,
                 self.description,
@@ -199,29 +274,62 @@ mod models {
                 self.vendor_id,
                 self.vendor_gold,
             )
-            .execute(db)
-            .await
-            .map_err(|error| {
-                if let sqlx::error::Error::Database(db_error) = &error {
-                    if db_error
-                        .message()
-                        .contains("violates foreign key constraint \"shops_owner_id_fkey\"")
-                    {
-                        return anyhow::Error::new(
-                            HttpApiProblem::with_title_and_type_from_status(
-                                StatusCode::BAD_REQUEST,
-                            )
-                            .set_detail(format!("Owner with id: {} does not exist", self.owner_id)),
-                        );
-                    }
-                }
-                anyhow::Error::new(error)
-            })?;
-            dbg!(result);
+            .fetch_one(db)
+            .await?;
             let elapsed = timer.elapsed();
-            dbg!(elapsed);
-            info!("INSERT INTO shops ... | {:.3?} elapsed", elapsed);
-            Ok(())
+            debug!("INSERT INTO shops ... {:.3?}", elapsed);
+            Ok(result)
+        }
+    }
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    pub struct Owner {
+        pub id: Option<i32>,
+        pub name: String,
+        pub api_key: Uuid,
+        pub ip_address: Option<IpNetwork>,
+        pub mod_version: String,
+        pub created_at: Option<NaiveDateTime>,
+        pub updated_at: Option<NaiveDateTime>,
+    }
+
+    impl Owner {
+        pub fn url(&self, api_url: &Url) -> Result<Url> {
+            if let Some(id) = self.id {
+                Ok(api_url.join(&format!("/owners/{}", id))?)
+            } else {
+                Err(anyhow!("Cannot get URL for owner with no id"))
+            }
+        }
+
+        pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
+            let timer = std::time::Instant::now();
+            let result = sqlx::query_as!(Self, "SELECT * FROM owners WHERE id = $1", id)
+                .fetch_one(db)
+                .await?;
+            let elapsed = timer.elapsed();
+            debug!("SELECT * FROM owners ... {:.3?}", elapsed);
+            Ok(result)
+        }
+
+        pub async fn save(self, db: &PgPool) -> Result<Self> {
+            let timer = std::time::Instant::now();
+            let result = sqlx::query_as!(
+                Self,
+                "INSERT INTO owners
+                (name, api_key, ip_address, mod_version, created_at, updated_at)
+                VALUES ($1, $2, $3, $4, now(), now())
+                RETURNING *",
+                self.name,
+                self.api_key,
+                self.ip_address,
+                self.mod_version,
+            )
+            .fetch_one(db)
+            .await?;
+            let elapsed = timer.elapsed();
+            debug!("INSERT INTO owners ... {:.3?}", elapsed);
+            Ok(result)
         }
     }
 }
@@ -248,11 +356,23 @@ mod problem {
                         db_error.message(),
                         db_error.details().unwrap_or("")
                     );
+                    if let Some(code) = db_error.code() {
+                        if let Some(constraint) = db_error.constraint_name() {
+                            if code == "23503" && constraint == "shops_owner_id_fkey" {
+                                // foreign_key_violation
+                                return HttpApiProblem::with_title_and_type_from_status(
+                                    StatusCode::BAD_REQUEST,
+                                )
+                                .set_detail("Owner does not exist");
+                            }
+                        }
+                    }
                 }
                 _ => {}
             }
         }
 
+        error!("Recovering unhandled error: {:?}", error);
         // TODO: this leaks internal info, should not stringify error
         HttpApiProblem::new(format!("Internal Server Error: {:?}", error))
             .set_status(StatusCode::INTERNAL_SERVER_ERROR)

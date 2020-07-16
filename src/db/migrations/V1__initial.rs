@@ -7,7 +7,7 @@ pub fn migration() -> String {
         t.add_column("id", types::primary().indexed(true));
         t.add_column("name", types::varchar(255));
         t.add_column("api_key", types::uuid());
-        t.add_column("ip_address", types::varchar(45));
+        t.add_column("ip_address", types::custom("inet").nullable(true));
         t.add_column("mod_version", types::varchar(25));
         t.add_column("created_at", types::custom("timestamp(3)"));
         t.add_column("updated_at", types::custom("timestamp(3)"));
