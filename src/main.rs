@@ -177,21 +177,25 @@ mod handlers {
 
     pub async fn get_shop(env: Environment, id: i32) -> Result<impl Reply, Rejection> {
         let shop = Shop::get(&env.db, id).await.map_err(reject_anyhow)?;
-        return Ok(with_status(json(&shop), StatusCode::OK));
+        let reply = json(&shop);
+        let reply = with_status(reply, StatusCode::OK);
+        Ok(reply)
     }
 
     pub async fn create_shop(env: Environment, shop: Shop) -> Result<impl Reply, Rejection> {
         let saved_shop = shop.save(&env.db).await.map_err(reject_anyhow)?;
         let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
-        return Ok(with_status(
-            with_header(json(&saved_shop), "Location", url.as_str()),
-            StatusCode::CREATED,
-        ));
+        let reply = json(&saved_shop);
+        let reply = with_header(reply, "Location", url.as_str());
+        let reply = with_status(reply, StatusCode::CREATED);
+        Ok(reply)
     }
 
     pub async fn get_owner(env: Environment, id: i32) -> Result<impl Reply, Rejection> {
         let owner = Owner::get(&env.db, id).await.map_err(reject_anyhow)?;
-        return Ok(with_status(json(&owner), StatusCode::OK));
+        let reply = json(&owner);
+        let reply = with_status(reply, StatusCode::OK);
+        Ok(reply)
     }
 
     pub async fn create_owner(
@@ -208,10 +212,10 @@ mod handlers {
         };
         let saved_owner = owner_with_ip.save(&env.db).await.map_err(reject_anyhow)?;
         let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
-        return Ok(with_status(
-            with_header(json(&saved_owner), "Location", url.as_str()),
-            StatusCode::CREATED,
-        ));
+        let reply = json(&saved_owner);
+        let reply = with_header(reply, "Location", url.as_str());
+        let reply = with_status(reply, StatusCode::CREATED);
+        Ok(reply)
     }
 }
 
