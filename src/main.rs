@@ -71,10 +71,12 @@ async fn main() -> Result<()> {
     let home = warp::path!("api" / "v1").map(|| "Shopkeeper home page");
     let get_shop = filters::get_shop(env.clone());
     let create_shop = filters::create_shop(env.clone());
+    let list_shops = filters::list_shops(env.clone());
     let get_owner = filters::get_owner(env.clone());
     let create_owner = filters::create_owner(env.clone());
     let routes = create_shop
         .or(get_shop)
+        .or(list_shops)
         .or(create_owner)
         .or(get_owner)
         .or(home)
@@ -106,7 +108,7 @@ mod filters {
     use warp::{Filter, Rejection, Reply};
 
     use super::handlers;
-    use super::models::{Owner, Shop};
+    use super::models::{ListParams, Owner, Shop};
     use super::Environment;
 
     pub fn get_shop(
@@ -121,11 +123,21 @@ mod filters {
     pub fn create_shop(
         env: Environment,
     ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-        warp::path("shops")
+        warp::path!("shops")
             .and(warp::post())
             .and(json_body::<Shop>())
             .and(with_env(env))
             .and_then(handlers::create_shop)
+    }
+
+    pub fn list_shops(
+        env: Environment,
+    ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+        warp::path!("shops")
+            .and(warp::get())
+            .and(warp::query::<ListParams>())
+            .and(with_env(env))
+            .and_then(handlers::list_shops)
     }
 
     pub fn get_owner(
@@ -140,7 +152,7 @@ mod filters {
     pub fn create_owner(
         env: Environment,
     ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-        warp::path("owners")
+        warp::path!("owners")
             .and(warp::post())
             .and(json_body::<Owner>())
             .and(warp::addr::remote())
@@ -163,19 +175,37 @@ mod filters {
 }
 
 mod handlers {
+    use http_api_problem::HttpApiProblem;
     use ipnetwork::IpNetwork;
     use std::net::SocketAddr;
     use warp::http::StatusCode;
     use warp::reply::{json, with_header, with_status};
     use warp::{Rejection, Reply};
 
-    use super::models::{Owner, Shop};
+    use super::models::{ListParams, Owner, Shop};
     use super::problem::reject_anyhow;
     use super::Environment;
 
     pub async fn get_shop(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
         let shop = Shop::get(&env.db, id).await.map_err(reject_anyhow)?;
         let reply = json(&shop);
+        let reply = with_status(reply, StatusCode::OK);
+        Ok(reply)
+    }
+
+    pub async fn list_shops(
+        list_params: ListParams,
+        env: Environment,
+    ) -> Result<impl Reply, Rejection> {
+        let shops = Shop::list(&env.db, list_params)
+            .await
+            .map_err(reject_anyhow)?;
+        if shops.is_empty() {
+            return Err(warp::reject::custom(
+                HttpApiProblem::with_title_and_type_from_status(StatusCode::NOT_FOUND),
+            ));
+        }
+        let reply = json(&shops);
         let reply = with_status(reply, StatusCode::OK);
         Ok(reply)
     }
@@ -223,8 +253,45 @@ mod models {
     use ipnetwork::IpNetwork;
     use serde::{Deserialize, Serialize};
     use sqlx::postgres::PgPool;
+    use std::fmt;
     use url::Url;
     use uuid::Uuid;
+
+    #[derive(Debug, Deserialize)]
+    pub enum Order {
+        Asc,
+        Desc,
+    }
+
+    impl fmt::Display for Order {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(
+                f,
+                "{}",
+                match self {
+                    Order::Asc => "ASC",
+                    Order::Desc => "DESC",
+                }
+            )
+        }
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct ListParams {
+        limit: Option<i64>,
+        offset: Option<i64>,
+        order_by: Option<String>,
+        order: Option<Order>,
+    }
+
+    impl ListParams {
+        pub fn get_order_by(&self) -> String {
+            let default_order_by = "updated_at".to_string();
+            let order_by = self.order_by.as_ref().unwrap_or(&default_order_by);
+            let order = self.order.as_ref().unwrap_or(&Order::Desc);
+            format!("{} {}", order_by, order)
+        }
+    }
 
     #[derive(Debug, Serialize, Deserialize, Clone)]
     pub struct Shop {
@@ -280,6 +347,25 @@ mod models {
             .await?;
             let elapsed = timer.elapsed();
             debug!("INSERT INTO shops ... {:.3?}", elapsed);
+            Ok(result)
+        }
+
+        pub async fn list(db: &PgPool, list_params: ListParams) -> Result<Vec<Self>> {
+            let timer = std::time::Instant::now();
+            let result = sqlx::query_as!(
+                Self,
+                "SELECT * FROM shops
+                ORDER BY $1
+                LIMIT $2
+                OFFSET $3",
+                list_params.get_order_by(),
+                list_params.limit.unwrap_or(10),
+                list_params.offset.unwrap_or(0),
+            )
+            .fetch_all(db)
+            .await?;
+            let elapsed = timer.elapsed();
+            debug!("SELECT * FROM shops ... {:.3?}", elapsed);
             Ok(result)
         }
     }
