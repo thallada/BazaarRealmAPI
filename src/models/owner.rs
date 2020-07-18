@@ -62,18 +62,31 @@ impl Model for Owner {
 
     async fn list(db: &PgPool, list_params: ListParams) -> Result<Vec<Self>> {
         let timer = std::time::Instant::now();
-        let result = sqlx::query_as!(
-            Self,
-            "SELECT * FROM owners
-            ORDER BY $1
-            LIMIT $2
-            OFFSET $3",
-            list_params.get_order_by(),
-            list_params.limit.unwrap_or(10),
-            list_params.offset.unwrap_or(0),
-        )
-        .fetch_all(db)
-        .await?;
+        let result = if let Some(order_by) = list_params.get_order_by() {
+            sqlx::query_as!(
+                Self,
+                "SELECT * FROM owners
+                ORDER BY $1
+                LIMIT $2
+                OFFSET $3",
+                order_by,
+                list_params.limit.unwrap_or(10),
+                list_params.offset.unwrap_or(0),
+            )
+            .fetch_all(db)
+            .await?
+        } else {
+            sqlx::query_as!(
+                Self,
+                "SELECT * FROM owners
+                LIMIT $1
+                OFFSET $2",
+                list_params.limit.unwrap_or(10),
+                list_params.offset.unwrap_or(0),
+            )
+            .fetch_all(db)
+            .await?
+        };
         let elapsed = timer.elapsed();
         debug!("SELECT * FROM owners ... {:.3?}", elapsed);
         Ok(result)

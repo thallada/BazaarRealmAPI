@@ -37,10 +37,11 @@ pub struct ListParams {
 }
 
 impl ListParams {
-    pub fn get_order_by(&self) -> String {
-        let default_order_by = "updated_at".to_string();
-        let order_by = self.order_by.as_ref().unwrap_or(&default_order_by);
-        let order = self.order.as_ref().unwrap_or(&Order::Desc);
-        format!("{} {}", order_by, order)
+    pub fn get_order_by(&self) -> Option<String> {
+        if let Some(order_by) = self.order_by.as_ref() {
+            let order = self.order.as_ref().unwrap_or(&Order::Desc);
+            return Some(format!("{} {}", order_by, order));
+        }
+        None
     }
 }
