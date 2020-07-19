@@ -4,10 +4,12 @@ use std::fmt;
 pub mod model;
 pub mod owner;
 pub mod shop;
+pub mod interior_ref;
 
 pub use model::Model;
 pub use owner::Owner;
 pub use shop::Shop;
+pub use interior_ref::InteriorRef;
 
 #[derive(Debug, Deserialize)]
 pub enum Order {

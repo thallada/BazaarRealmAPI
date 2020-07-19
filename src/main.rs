@@ -70,20 +70,30 @@ async fn main() -> Result<()> {
     let api_url = host_url.join("/api/v1")?;
     let env = Environment::new(api_url).await?;
 
-    let home = warp::path!("api" / "v1").map(|| "Shopkeeper home page");
+    let base = warp::path("api").and(warp::path("v1"));
     let get_shop = filters::get_shop(env.clone());
     let create_shop = filters::create_shop(env.clone());
     let list_shops = filters::list_shops(env.clone());
     let get_owner = filters::get_owner(env.clone());
     let create_owner = filters::create_owner(env.clone());
     let list_owners = filters::list_owners(env.clone());
-    let routes = create_shop
-        .or(get_shop)
-        .or(list_shops)
-        .or(create_owner)
-        .or(get_owner)
-        .or(list_owners)
-        .or(home)
+    let get_interior_ref = filters::get_interior_ref(env.clone());
+    let create_interior_ref = filters::create_interior_ref(env.clone());
+    let list_interior_refs = filters::list_interior_refs(env.clone());
+    let bulk_create_interior_refs = filters::bulk_create_interior_refs(env.clone());
+    let routes = base
+        .and(
+            create_shop
+                .or(get_shop)
+                .or(list_shops)
+                .or(create_owner)
+                .or(get_owner)
+                .or(list_owners)
+                .or(create_interior_ref)
+                .or(get_interior_ref)
+                .or(list_interior_refs)
+                .or(bulk_create_interior_refs),
+        )
         .recover(problem::unpack_problem)
         .with(warp::compression::gzip())
         .with(warp::log("shopkeeper"));

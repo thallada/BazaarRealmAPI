@@ -26,6 +26,7 @@ pub fn migration() -> String {
         t.add_column("sell_buy_list_id", types::integer().default(0));
         t.add_column("vendor_id", types::integer());
         t.add_column("vendor_gold", types::integer());
+        t.add_column("interior_refs", types::custom("jsonb"));
         t.add_column("created_at", types::custom("timestamp(3)"));
         t.add_column("updated_at", types::custom("timestamp(3)"));
         t.add_index(
