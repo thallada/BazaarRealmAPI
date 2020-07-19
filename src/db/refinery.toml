@@ -1,7 +1,0 @@
-[main]
-db_type = "Postgres"
-db_host = "localhost"
-db_port = "5432"
-db_user = "shopkeeper"
-db_pass = "K4ZJv7xzF6pioADTukDDis3ZfsgKUC"
-db_name = "shopkeeper"
