@@ -4,7 +4,7 @@ use warp::http::StatusCode;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
-use super::models::{InteriorRef, ListParams, Model, Owner, Shop};
+use super::models::{InteriorRefList, ListParams, Model, Owner, Shop};
 use super::problem::reject_anyhow;
 use super::Environment;
 
@@ -75,44 +75,49 @@ pub async fn create_owner(
     Ok(reply)
 }
 
-pub async fn get_interior_ref(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
-    let interior_ref = InteriorRef::get(&env.db, id).await.map_err(reject_anyhow)?;
-    let reply = json(&interior_ref);
+pub async fn get_interior_ref_list(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
+    let interior_ref_list = InteriorRefList::get(&env.db, id)
+        .await
+        .map_err(reject_anyhow)?;
+    let reply = json(&interior_ref_list);
     let reply = with_status(reply, StatusCode::OK);
     Ok(reply)
 }
 
-pub async fn list_interior_refs(
+pub async fn list_interior_ref_lists(
     list_params: ListParams,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let interior_refs = InteriorRef::list(&env.db, list_params)
+    let interior_ref_lists = InteriorRefList::list(&env.db, list_params)
         .await
         .map_err(reject_anyhow)?;
-    let reply = json(&interior_refs);
+    let reply = json(&interior_ref_lists);
     let reply = with_status(reply, StatusCode::OK);
     Ok(reply)
 }
 
-pub async fn create_interior_ref(
-    interior_ref: InteriorRef,
+pub async fn create_interior_ref_list(
+    interior_ref_list: InteriorRefList,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let saved_interior_ref = interior_ref.save(&env.db).await.map_err(reject_anyhow)?;
-    let url = saved_interior_ref
+    let saved_interior_ref_list = interior_ref_list
+        .save(&env.db)
+        .await
+        .map_err(reject_anyhow)?;
+    let url = saved_interior_ref_list
         .url(&env.api_url)
         .map_err(reject_anyhow)?;
-    let reply = json(&saved_interior_ref);
+    let reply = json(&saved_interior_ref_list);
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     Ok(reply)
 }
 
-pub async fn bulk_create_interior_refs(
-    interior_refs: Vec<InteriorRef>,
+pub async fn bulk_create_interior_ref_lists(
+    interior_ref_lists: Vec<InteriorRefList>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    InteriorRef::bulk_save(&env.db, interior_refs)
+    InteriorRefList::bulk_save(&env.db, interior_ref_lists)
         .await
         .map_err(reject_anyhow)?;
     Ok(StatusCode::CREATED)

@@ -1,15 +1,15 @@
 use serde::Deserialize;
 use std::fmt;
 
+pub mod interior_ref_list;
 pub mod model;
 pub mod owner;
 pub mod shop;
-pub mod interior_ref;
 
+pub use interior_ref_list::InteriorRefList;
 pub use model::Model;
 pub use owner::Owner;
 pub use shop::Shop;
-pub use interior_ref::InteriorRef;
 
 #[derive(Debug, Deserialize)]
 pub enum Order {

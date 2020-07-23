@@ -2,7 +2,6 @@ use anyhow::Result;
 use async_trait::async_trait;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
-use serde_json;
 use sqlx::postgres::PgPool;
 
 use super::ListParams;

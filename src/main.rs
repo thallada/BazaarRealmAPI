@@ -77,10 +77,10 @@ async fn main() -> Result<()> {
     let get_owner = filters::get_owner(env.clone());
     let create_owner = filters::create_owner(env.clone());
     let list_owners = filters::list_owners(env.clone());
-    let get_interior_ref = filters::get_interior_ref(env.clone());
-    let create_interior_ref = filters::create_interior_ref(env.clone());
-    let list_interior_refs = filters::list_interior_refs(env.clone());
-    let bulk_create_interior_refs = filters::bulk_create_interior_refs(env.clone());
+    let get_interior_ref_list = filters::get_interior_ref_list(env.clone());
+    let create_interior_ref_list = filters::create_interior_ref_list(env.clone());
+    let list_interior_ref_lists = filters::list_interior_ref_lists(env.clone());
+    let bulk_create_interior_ref_lists = filters::bulk_create_interior_ref_lists(env.clone());
     let routes = base
         .and(
             create_shop
@@ -89,10 +89,10 @@ async fn main() -> Result<()> {
                 .or(create_owner)
                 .or(get_owner)
                 .or(list_owners)
-                .or(create_interior_ref)
-                .or(get_interior_ref)
-                .or(list_interior_refs)
-                .or(bulk_create_interior_refs),
+                .or(create_interior_ref_list)
+                .or(get_interior_ref_list)
+                .or(list_interior_ref_lists)
+                .or(bulk_create_interior_ref_lists),
         )
         .recover(problem::unpack_problem)
         .with(warp::compression::gzip())

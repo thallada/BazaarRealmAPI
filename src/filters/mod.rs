@@ -3,7 +3,7 @@ use std::convert::Infallible;
 use warp::{Filter, Rejection, Reply};
 
 use super::handlers;
-use super::models::{InteriorRef, ListParams, Owner, Shop};
+use super::models::{InteriorRefList, ListParams, Owner, Shop};
 use super::Environment;
 
 pub fn get_shop(env: Environment) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -61,43 +61,43 @@ pub fn list_owners(
         .and_then(handlers::list_owners)
 }
 
-pub fn get_interior_ref(
+pub fn get_interior_ref_list(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::path!("interior_refs" / i32)
+    warp::path!("interior_ref_lists" / i32)
         .and(warp::get())
         .and(with_env(env))
-        .and_then(handlers::get_interior_ref)
+        .and_then(handlers::get_interior_ref_list)
 }
 
-pub fn create_interior_ref(
+pub fn create_interior_ref_list(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::path!("interior_refs")
+    warp::path!("interior_ref_lists")
         .and(warp::post())
-        .and(json_body::<InteriorRef>())
+        .and(json_body::<InteriorRefList>())
         .and(with_env(env))
-        .and_then(handlers::create_interior_ref)
+        .and_then(handlers::create_interior_ref_list)
 }
 
-pub fn list_interior_refs(
+pub fn list_interior_ref_lists(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::path!("interior_refs")
+    warp::path!("interior_ref_lists")
         .and(warp::get())
         .and(warp::query::<ListParams>())
         .and(with_env(env))
-        .and_then(handlers::list_interior_refs)
+        .and_then(handlers::list_interior_ref_lists)
 }
 
-pub fn bulk_create_interior_refs(
+pub fn bulk_create_interior_ref_lists(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::path!("interior_refs" / "bulk")
+    warp::path!("interior_ref_lists" / "bulk")
         .and(warp::post())
-        .and(json_body::<Vec<InteriorRef>>())
+        .and(json_body::<Vec<InteriorRefList>>())
         .and(with_env(env))
-        .and_then(handlers::bulk_create_interior_refs)
+        .and_then(handlers::bulk_create_interior_ref_lists)
 }
 
 fn with_env(env: Environment) -> impl Filter<Extract = (Environment,), Error = Infallible> + Clone {
