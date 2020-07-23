@@ -26,7 +26,6 @@ pub fn migration() -> String {
         t.add_column("sell_buy_list_id", types::integer().default(0));
         t.add_column("vendor_id", types::integer());
         t.add_column("vendor_gold", types::integer());
-        t.add_column("interior_refs", types::custom("jsonb"));
         t.add_column("created_at", types::custom("timestamp(3)"));
         t.add_column("updated_at", types::custom("timestamp(3)"));
         t.add_index(
@@ -61,19 +60,14 @@ pub fn migration() -> String {
         t.add_column("created_at", types::custom("timestamp(3)"));
     });
 
+    // TODO: rename to interior_reflist or similar?
+    // TODO: index shop_id col
     m.create_table("interior_refs", |t| {
         t.add_column("id", types::primary().indexed(true));
         t.add_column("shop_id", types::foreign("shops", "id"));
-        t.add_column("mod_name", types::varchar(255));
-        t.add_column("local_form_id", types::integer());
-        t.add_column("position_x", types::float());
-        t.add_column("position_y", types::float());
-        t.add_column("position_z", types::float());
-        t.add_column("angle_x", types::float());
-        t.add_column("angle_y", types::float());
-        t.add_column("angle_z", types::float());
-        t.add_column("scale", types::float());
+        t.add_column("references", types::custom("jsonb"));
         t.add_column("created_at", types::custom("timestamp(3)"));
+        t.add_column("updated_at", types::custom("timestamp(3)"));
     });
 
     m.make::<Pg>()

@@ -18,7 +18,6 @@ pub struct Shop {
     pub sell_buy_list_id: i32,
     pub vendor_id: i32,
     pub vendor_gold: i32,
-    pub interior_refs: serde_json::value::Value,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
 }
@@ -49,8 +48,8 @@ impl Model for Shop {
             Self,
             "INSERT INTO shops
             (name, owner_id, description, is_not_sell_buy, sell_buy_list_id, vendor_id,
-             vendor_gold, interior_refs, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+             vendor_gold, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, now(), now())
             RETURNING *",
             self.name,
             self.owner_id,
@@ -59,7 +58,6 @@ impl Model for Shop {
             self.sell_buy_list_id,
             self.vendor_id,
             self.vendor_gold,
-            self.interior_refs,
         )
         .fetch_one(db)
         .await?;
