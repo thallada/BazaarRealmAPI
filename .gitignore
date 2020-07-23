@@ -3,3 +3,4 @@
 .env
 Session.vim
 src/db/refinery.toml
+tags

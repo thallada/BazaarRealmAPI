@@ -9,13 +9,23 @@
     postgres=# ALTER DATABASE shopkeeper OWNER TO shopkeeper;
     \password shopkeeper
     postgres=# CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-3. Save password somewhere safe and then update the password in `refinery.toml` 
-   and add a `.env` file to the project directory with the contents:
-    DATABASE_URL=postgresql://shopkeeper@<password>@localhost/shopkeeper
+3. Save password somewhere safe and then and add a `.env` file to the project 
+   directory with the contents:
+    DATABASE_URL=postgresql://shopkeeper:<password>@localhost/shopkeeper
+    RUST_LOG="shopkeeper=debug"
+    HOST="http://localhost:3030"
+4. Create a new file at `src/db/refinery.toml` with the contents:
+    [main]
+    db_type = "Postgres"
+    db_host = "localhost"
+    db_port = "5432"
+    db_user = "shopkeeper"
+    db_pass = "<database-password-here>"
+    db_name = "shopkeeper"
 4. Run `cargo run -- -m` which will compile the app in debug mode and run the 
    database migrations.
 5. Run `./devserver.sh` to run the dev server (by default it listens at 
-   `0.0.0.0:3030`).
+   `127.0.0.1:3030`).
 
 # Todo
 
