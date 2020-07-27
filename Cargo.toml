@@ -16,8 +16,7 @@ listenfd = "0.3"
 log = "0.4"
 pretty_env_logger = "0.4"
 tokio = { version = "0.2", features = ["macros"] }
-sqlx = { version = "0.3", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono", 
-"uuid", "ipnetwork", "json" ] }
+sqlx = { version = "0.3", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono", "uuid", "ipnetwork", "json" ] }
 warp = { version = "0.2", features = ["compression"] }
 refinery = { version = "0.3.0", features = [ "tokio-postgres", "tokio" ] }
 barrel = { version = "0.6.5", features = [ "pg" ] }
