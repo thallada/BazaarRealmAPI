@@ -4,6 +4,7 @@ use chrono::prelude::*;
 use ipnetwork::IpNetwork;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
+use tracing::debug;
 use uuid::Uuid;
 
 use super::ListParams;

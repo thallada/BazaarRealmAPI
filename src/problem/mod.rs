@@ -1,4 +1,5 @@
 use http_api_problem::HttpApiProblem;
+use tracing::error;
 use warp::http::StatusCode;
 use warp::{reject, Rejection, Reply};
 

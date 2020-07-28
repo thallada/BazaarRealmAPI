@@ -4,6 +4,7 @@ use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
 use sqlx::types::Json;
+use tracing::debug;
 
 use super::ListParams;
 use super::Model;

@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
+use tracing::debug;
 
 use super::ListParams;
 use super::Model;

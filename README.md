@@ -30,3 +30,5 @@
 # Todo
 
 * Make self-contained docker container that can run the app without any setup.
+* Add rate-limiting per IP address. The `tower` crate has a service that might 
+  be useful for this.
