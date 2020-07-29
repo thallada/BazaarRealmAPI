@@ -36,6 +36,11 @@ pub async fn create_shop(shop: Shop, env: Environment) -> Result<impl Reply, Rej
     Ok(reply)
 }
 
+pub async fn delete_shop(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
+    Shop::delete(&env.db, id).await.map_err(reject_anyhow)?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
 pub async fn get_owner(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
     let owner = Owner::get(&env.db, id).await.map_err(reject_anyhow)?;
     let reply = json(&owner);
@@ -73,6 +78,11 @@ pub async fn create_owner(
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     Ok(reply)
+}
+
+pub async fn delete_owner(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
+    Owner::delete(&env.db, id).await.map_err(reject_anyhow)?;
+    Ok(StatusCode::NO_CONTENT)
 }
 
 pub async fn get_interior_ref_list(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
@@ -113,12 +123,9 @@ pub async fn create_interior_ref_list(
     Ok(reply)
 }
 
-pub async fn bulk_create_interior_ref_lists(
-    interior_ref_lists: Vec<InteriorRefList>,
-    env: Environment,
-) -> Result<impl Reply, Rejection> {
-    InteriorRefList::bulk_save(&env.db, interior_ref_lists)
+pub async fn delete_interior_ref_list(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
+    InteriorRefList::delete(&env.db, id)
         .await
         .map_err(reject_anyhow)?;
-    Ok(StatusCode::CREATED)
+    Ok(StatusCode::NO_CONTENT)
 }

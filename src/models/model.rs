@@ -24,8 +24,6 @@ where
     }
     async fn get(db: &PgPool, id: i32) -> Result<Self>;
     async fn save(self, db: &PgPool) -> Result<Self>;
+    async fn delete(db: &PgPool, id: i32) -> Result<u64>;
     async fn list(db: &PgPool, list_params: ListParams) -> Result<Vec<Self>>;
-    async fn bulk_save(_db: &PgPool, _models: Vec<Self>) -> Result<()> {
-        unimplemented!()
-    }
 }

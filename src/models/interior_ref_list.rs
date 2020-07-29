@@ -55,7 +55,7 @@ impl Model for InteriorRefList {
         )
     }
 
-    #[instrument(level = "debug", skip(db))]
+    #[instrument(level = "debug", skip(self, db))]
     async fn save(self, db: &PgPool) -> Result<Self> {
         // TODO:
         // * Decide if I'll need to make the same changes to merchandise and transactions
@@ -72,6 +72,15 @@ impl Model for InteriorRefList {
         )
         .fetch_one(db)
         .await?)
+    }
+
+    #[instrument(level = "debug", skip(db))]
+    async fn delete(db: &PgPool, id: i32) -> Result<u64> {
+        Ok(
+            sqlx::query!("DELETE FROM interior_ref_lists WHERE id = $1", id)
+                .execute(db)
+                .await?,
+        )
     }
 
     #[instrument(level = "debug", skip(db))]

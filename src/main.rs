@@ -72,28 +72,11 @@ async fn main() -> Result<()> {
     let env = Environment::new(api_url).await?;
 
     let base = warp::path("api").and(warp::path("v1"));
-    let get_shop = filters::get_shop(env.clone());
-    let create_shop = filters::create_shop(env.clone());
-    let list_shops = filters::list_shops(env.clone());
-    let get_owner = filters::get_owner(env.clone());
-    let create_owner = filters::create_owner(env.clone());
-    let list_owners = filters::list_owners(env.clone());
-    let get_interior_ref_list = filters::get_interior_ref_list(env.clone());
-    let create_interior_ref_list = filters::create_interior_ref_list(env.clone());
-    let list_interior_ref_lists = filters::list_interior_ref_lists(env.clone());
-    let bulk_create_interior_ref_lists = filters::bulk_create_interior_ref_lists(env.clone());
     let routes = base
         .and(
-            create_shop
-                .or(get_shop)
-                .or(list_shops)
-                .or(create_owner)
-                .or(get_owner)
-                .or(list_owners)
-                .or(create_interior_ref_list)
-                .or(get_interior_ref_list)
-                .or(list_interior_ref_lists)
-                .or(bulk_create_interior_ref_lists),
+            filters::shops(env.clone())
+                .or(filters::owners(env.clone()))
+                .or(filters::interior_ref_lists(env.clone())),
         )
         .recover(problem::unpack_problem)
         .with(warp::compression::gzip())

@@ -63,6 +63,13 @@ impl Model for Shop {
     }
 
     #[instrument(level = "debug", skip(db))]
+    async fn delete(db: &PgPool, id: i32) -> Result<u64> {
+        Ok(sqlx::query!("DELETE FROM shops WHERE id = $1", id)
+            .execute(db)
+            .await?)
+    }
+
+    #[instrument(level = "debug", skip(db))]
     async fn list(db: &PgPool, list_params: ListParams) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
