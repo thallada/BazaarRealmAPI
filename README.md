@@ -29,6 +29,12 @@
 
 # Todo
 
+* Add HTTP header authentication for endpoints that modify an owner's data.
+* Add DELETE endpoints for existing resources.
+* Add endpoints for the other models.
+* Add caching. Not sure how to do this exactly. Could use Redis, Varnish, Nginx, 
+  or a lib resident in the rust web server process. I'll probably need to do 
+  invalidations as transactions are made, or interiors are updated.
 * Make self-contained docker container that can run the app without any setup.
 * Add rate-limiting per IP address. The `tower` crate has a service that might 
   be useful for this.

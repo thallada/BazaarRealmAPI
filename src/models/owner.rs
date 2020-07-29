@@ -4,7 +4,7 @@ use chrono::prelude::*;
 use ipnetwork::IpNetwork;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
-use tracing::debug;
+use tracing::instrument;
 use uuid::Uuid;
 
 use super::ListParams;
@@ -31,38 +31,34 @@ impl Model for Owner {
         self.id
     }
 
+    #[instrument(level = "debug", skip(db))]
     async fn get(db: &PgPool, id: i32) -> Result<Self> {
-        let timer = std::time::Instant::now();
-        let result = sqlx::query_as!(Self, "SELECT * FROM owners WHERE id = $1", id)
-            .fetch_one(db)
-            .await?;
-        let elapsed = timer.elapsed();
-        debug!("SELECT * FROM owners ... {:.3?}", elapsed);
-        Ok(result)
+        Ok(
+            sqlx::query_as!(Self, "SELECT * FROM owners WHERE id = $1", id)
+                .fetch_one(db)
+                .await?,
+        )
     }
 
+    #[instrument(level = "debug", skip(db))]
     async fn save(self, db: &PgPool) -> Result<Self> {
-        let timer = std::time::Instant::now();
-        let result = sqlx::query_as!(
+        Ok(sqlx::query_as!(
             Self,
             "INSERT INTO owners
-            (name, api_key, ip_address, mod_version, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, now(), now())
-            RETURNING *",
+                (name, api_key, ip_address, mod_version, created_at, updated_at)
+                VALUES ($1, $2, $3, $4, now(), now())
+                RETURNING *",
             self.name,
             self.api_key,
             self.ip_address,
             self.mod_version,
         )
         .fetch_one(db)
-        .await?;
-        let elapsed = timer.elapsed();
-        debug!("INSERT INTO owners ... {:.3?}", elapsed);
-        Ok(result)
+        .await?)
     }
 
+    #[instrument(level = "debug", skip(db))]
     async fn list(db: &PgPool, list_params: ListParams) -> Result<Vec<Self>> {
-        let timer = std::time::Instant::now();
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
                 Self,
@@ -88,8 +84,6 @@ impl Model for Owner {
             .fetch_all(db)
             .await?
         };
-        let elapsed = timer.elapsed();
-        debug!("SELECT * FROM owners ... {:.3?}", elapsed);
         Ok(result)
     }
 }

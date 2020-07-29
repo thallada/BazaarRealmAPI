@@ -4,7 +4,7 @@ use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
 use sqlx::types::Json;
-use tracing::debug;
+use tracing::instrument;
 
 use super::ListParams;
 use super::Model;
@@ -46,24 +46,22 @@ impl Model for InteriorRefList {
         self.id
     }
 
+    #[instrument(level = "debug", skip(db))]
     async fn get(db: &PgPool, id: i32) -> Result<Self> {
-        let timer = std::time::Instant::now();
-        let result =
+        Ok(
             sqlx::query_as_unchecked!(Self, "SELECT * FROM interior_ref_lists WHERE id = $1", id)
                 .fetch_one(db)
-                .await?;
-        let elapsed = timer.elapsed();
-        debug!("SELECT * FROM interior_ref_lists ... {:.3?}", elapsed);
-        Ok(result)
+                .await?,
+        )
     }
 
+    #[instrument(level = "debug", skip(db))]
     async fn save(self, db: &PgPool) -> Result<Self> {
-        let timer = std::time::Instant::now();
         // TODO:
         // * Decide if I'll need to make the same changes to merchandise and transactions
         //      - answer depends on how many rows of each I expect to insert in one go
         // * should probably omit ref_list from response
-        let result = sqlx::query_as_unchecked!(
+        Ok(sqlx::query_as_unchecked!(
             Self,
             "INSERT INTO interior_ref_lists
             (shop_id, ref_list, created_at, updated_at)
@@ -73,14 +71,11 @@ impl Model for InteriorRefList {
             self.ref_list,
         )
         .fetch_one(db)
-        .await?;
-        let elapsed = timer.elapsed();
-        debug!("INSERT INTO interior_ref_lists ... {:.3?}", elapsed);
-        Ok(result)
+        .await?)
     }
 
+    #[instrument(level = "debug", skip(db))]
     async fn list(db: &PgPool, list_params: ListParams) -> Result<Vec<Self>> {
-        let timer = std::time::Instant::now();
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as_unchecked!(
                 Self,
@@ -106,8 +101,6 @@ impl Model for InteriorRefList {
             .fetch_all(db)
             .await?
         };
-        let elapsed = timer.elapsed();
-        debug!("SELECT * FROM interior_ref_lists ... {:.3?}", elapsed);
         Ok(result)
     }
 }
