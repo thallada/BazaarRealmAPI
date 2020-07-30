@@ -1,12 +1,34 @@
+use anyhow::{anyhow, Result};
 use ipnetwork::IpNetwork;
+use sqlx::postgres::PgPool;
 use std::net::SocketAddr;
+use uuid::Uuid;
 use warp::http::StatusCode;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
 use super::models::{InteriorRefList, ListParams, Model, Owner, Shop};
-use super::problem::reject_anyhow;
+use super::problem::{forbidden_no_api_key, forbidden_no_owner, reject_anyhow};
 use super::Environment;
+
+pub async fn authenticate(api_key: Option<Uuid>, db: &PgPool) -> Result<i32> {
+    if let Some(api_key) = api_key {
+        Ok(
+            sqlx::query!("SELECT id FROM owners WHERE api_key = $1", api_key)
+                .fetch_one(db)
+                .await
+                .map_err(|error| {
+                    if let sqlx::Error::RowNotFound = error {
+                        return forbidden_no_owner();
+                    }
+                    anyhow!(error)
+                })?
+                .id,
+        )
+    } else {
+        Err(forbidden_no_api_key())
+    }
+}
 
 pub async fn get_shop(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
     let shop = Shop::get(&env.db, id).await.map_err(reject_anyhow)?;
@@ -36,8 +58,18 @@ pub async fn create_shop(shop: Shop, env: Environment) -> Result<impl Reply, Rej
     Ok(reply)
 }
 
-pub async fn delete_shop(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
-    Shop::delete(&env.db, id).await.map_err(reject_anyhow)?;
+pub async fn delete_shop(
+    id: i32,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(api_key, &env.db)
+        .await
+        .map_err(reject_anyhow)?;
+    dbg!(owner_id);
+    Shop::delete(&env.db, owner_id, id)
+        .await
+        .map_err(reject_anyhow)?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -80,8 +112,18 @@ pub async fn create_owner(
     Ok(reply)
 }
 
-pub async fn delete_owner(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
-    Owner::delete(&env.db, id).await.map_err(reject_anyhow)?;
+pub async fn delete_owner(
+    id: i32,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(api_key, &env.db)
+        .await
+        .map_err(reject_anyhow)?;
+    dbg!(owner_id);
+    Owner::delete(&env.db, owner_id, id)
+        .await
+        .map_err(reject_anyhow)?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -123,8 +165,16 @@ pub async fn create_interior_ref_list(
     Ok(reply)
 }
 
-pub async fn delete_interior_ref_list(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
-    InteriorRefList::delete(&env.db, id)
+pub async fn delete_interior_ref_list(
+    id: i32,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(api_key, &env.db)
+        .await
+        .map_err(reject_anyhow)?;
+    dbg!(owner_id);
+    InteriorRefList::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
     Ok(StatusCode::NO_CONTENT)

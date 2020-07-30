@@ -56,6 +56,7 @@ pub fn delete_shop(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
         .and(warp::delete())
+        .and(warp::header::optional("api-key"))
         .and(with_env(env))
         .and_then(handlers::delete_shop)
 }
@@ -91,6 +92,7 @@ pub fn delete_owner(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
         .and(warp::delete())
+        .and(warp::header::optional("api-key"))
         .and(with_env(env))
         .and_then(handlers::delete_owner)
 }
@@ -127,6 +129,7 @@ pub fn delete_interior_ref_list(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
         .and(warp::delete())
+        .and(warp::header::optional("api-key"))
         .and(with_env(env))
         .and_then(handlers::delete_interior_ref_list)
 }

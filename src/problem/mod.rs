@@ -1,7 +1,29 @@
+use anyhow::{anyhow, Error};
 use http_api_problem::HttpApiProblem;
 use tracing::error;
 use warp::http::StatusCode;
 use warp::{reject, Rejection, Reply};
+
+pub fn forbidden_permission() -> Error {
+    anyhow!(
+        HttpApiProblem::with_title_and_type_from_status(StatusCode::FORBIDDEN,)
+            .set_detail("Api-Key does not have required permissions")
+    )
+}
+
+pub fn forbidden_no_owner() -> Error {
+    anyhow!(
+        HttpApiProblem::with_title_and_type_from_status(StatusCode::FORBIDDEN,)
+            .set_detail("Api-Key not recognized")
+    )
+}
+
+pub fn forbidden_no_api_key() -> Error {
+    anyhow!(
+        HttpApiProblem::with_title_and_type_from_status(StatusCode::FORBIDDEN,)
+            .set_detail("Api-Key header not present")
+    )
+}
 
 pub fn from_anyhow(error: anyhow::Error) -> HttpApiProblem {
     let error = match error.downcast::<HttpApiProblem>() {

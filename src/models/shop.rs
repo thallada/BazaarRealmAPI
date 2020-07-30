@@ -7,6 +7,7 @@ use tracing::instrument;
 
 use super::ListParams;
 use super::Model;
+use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Shop {
@@ -63,10 +64,17 @@ impl Model for Shop {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn delete(db: &PgPool, id: i32) -> Result<u64> {
-        Ok(sqlx::query!("DELETE FROM shops WHERE id = $1", id)
-            .execute(db)
-            .await?)
+    async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+        let shop = sqlx::query!("SELECT owner_id FROM shops WHERE id = $1", id)
+            .fetch_one(db)
+            .await?;
+        if shop.owner_id == owner_id {
+            return Ok(sqlx::query!("DELETE FROM shops WHERE shops.id = $1", id)
+                .execute(db)
+                .await?);
+        } else {
+            return Err(forbidden_permission());
+        }
     }
 
     #[instrument(level = "debug", skip(db))]

@@ -9,6 +9,7 @@ use uuid::Uuid;
 
 use super::ListParams;
 use super::Model;
+use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Owner {
@@ -58,10 +59,17 @@ impl Model for Owner {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn delete(db: &PgPool, id: i32) -> Result<u64> {
-        Ok(sqlx::query!("DELETE FROM owners WHERE id = $1", id)
-            .execute(db)
-            .await?)
+    async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+        let owner = sqlx::query!("SELECT id FROM owners WHERE id = $1", id)
+            .fetch_one(db)
+            .await?;
+        if owner.id == owner_id {
+            Ok(sqlx::query!("DELETE FROM owners WHERE id = $1", id)
+                .execute(db)
+                .await?)
+        } else {
+            return Err(forbidden_permission());
+        }
     }
 
     #[instrument(level = "debug", skip(db))]

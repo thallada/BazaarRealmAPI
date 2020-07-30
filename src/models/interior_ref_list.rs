@@ -8,6 +8,7 @@ use tracing::instrument;
 
 use super::ListParams;
 use super::Model;
+use crate::problem::forbidden_permission;
 
 // sqlx queries for this model need to be `query_as_unchecked!` because `query_as!` does not
 // support user-defined types (`ref_list` Json field).
@@ -31,6 +32,7 @@ pub struct InteriorRef {
 pub struct InteriorRefList {
     pub id: Option<i32>,
     pub shop_id: i32,
+    pub owner_id: i32,
     pub ref_list: Json<Vec<InteriorRef>>,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
@@ -64,10 +66,11 @@ impl Model for InteriorRefList {
         Ok(sqlx::query_as_unchecked!(
             Self,
             "INSERT INTO interior_ref_lists
-            (shop_id, ref_list, created_at, updated_at)
-            VALUES ($1, $2, now(), now())
+            (shop_id, owner_id, ref_list, created_at, updated_at)
+            VALUES ($1, $2, $3, now(), now())
             RETURNING *",
             self.shop_id,
+            self.owner_id,
             self.ref_list,
         )
         .fetch_one(db)
@@ -75,12 +78,20 @@ impl Model for InteriorRefList {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn delete(db: &PgPool, id: i32) -> Result<u64> {
-        Ok(
-            sqlx::query!("DELETE FROM interior_ref_lists WHERE id = $1", id)
-                .execute(db)
-                .await?,
-        )
+    async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+        let interior_ref_list =
+            sqlx::query!("SELECT owner_id FROM interior_ref_lists WHERE id = $1", id)
+                .fetch_one(db)
+                .await?;
+        if interior_ref_list.owner_id == owner_id {
+            return Ok(
+                sqlx::query!("DELETE FROM interior_ref_lists WHERE id = $1", id)
+                    .execute(db)
+                    .await?,
+            );
+        } else {
+            return Err(forbidden_permission());
+        }
     }
 
     #[instrument(level = "debug", skip(db))]
