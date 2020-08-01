@@ -15,7 +15,9 @@ use crate::problem::forbidden_permission;
 pub struct Owner {
     pub id: Option<i32>,
     pub name: String,
-    pub api_key: Uuid,
+    #[serde(skip_serializing)]
+    pub api_key: Option<Uuid>,
+    #[serde(skip_serializing)]
     pub ip_address: Option<IpNetwork>,
     pub mod_version: String,
     pub created_at: Option<NaiveDateTime>,
@@ -40,7 +42,7 @@ impl Model for Owner {
             .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(db))]
+    #[instrument(level = "debug", skip(self, db))]
     async fn save(self, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,

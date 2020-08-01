@@ -48,6 +48,7 @@ pub fn create_shop(
     warp::path::end()
         .and(warp::post())
         .and(json_body::<Shop>())
+        .and(warp::header::optional("api-key"))
         .and(with_env(env))
         .and_then(handlers::create_shop)
 }
@@ -86,6 +87,7 @@ pub fn create_owner(
         .and(warp::post())
         .and(json_body::<Owner>())
         .and(warp::addr::remote())
+        .and(warp::header::optional("api-key"))
         .and(with_env(env))
         .and_then(handlers::create_owner)
 }
@@ -125,6 +127,7 @@ pub fn create_interior_ref_list(
     warp::path::end()
         .and(warp::post())
         .and(json_body::<InteriorRefList>())
+        .and(warp::header::optional("api-key"))
         .and(with_env(env))
         .and_then(handlers::create_interior_ref_list)
 }

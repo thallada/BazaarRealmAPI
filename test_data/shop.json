@@ -1,6 +1,5 @@
 {
   "name": "Test Shop",
-  "owner_id": 1,
   "description": "for testing",
   "is_not_sell_buy": true,
   "sell_buy_list_id": 1,

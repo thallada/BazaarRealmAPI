@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
 
     let host = env::var("HOST").expect("`HOST` environment variable not defined");
     let host_url = Url::parse(&host).expect("Cannot parse URL from `HOST` environment variable");
-    let api_url = host_url.join("/api/v1")?;
+    let api_url = host_url.join("/api/v1/")?;
     let env = Environment::new(api_url).await?;
 
     let base = warp::path("api").and(warp::path("v1"));

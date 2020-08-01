@@ -14,7 +14,7 @@ where
     fn pk(&self) -> Option<i32>;
     fn url(&self, api_url: &Url) -> Result<Url> {
         if let Some(pk) = self.pk() {
-            Ok(api_url.join(&format!("/{}s/{}", Self::resource_name(), pk))?)
+            Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), pk))?)
         } else {
             Err(anyhow!(
                 "Cannot get URL for {} with no primary key",

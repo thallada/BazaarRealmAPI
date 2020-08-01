@@ -64,6 +64,7 @@ pub fn migration() -> String {
 
     m.create_table("interior_ref_lists", |t| {
         t.add_column("id", types::primary().indexed(true));
+        // TODO make shop_id unique, recover unique_violation
         t.add_column("shop_id", types::foreign("shops", "id").indexed(true));
         t.add_column("owner_id", types::foreign("owners", "id").indexed(true));
         t.add_column("ref_list", types::custom("jsonb"));

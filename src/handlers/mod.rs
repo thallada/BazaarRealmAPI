@@ -1,6 +1,5 @@
 use anyhow::{anyhow, Result};
 use ipnetwork::IpNetwork;
-use sqlx::postgres::PgPool;
 use std::net::SocketAddr;
 use tracing::instrument;
 use uuid::Uuid;
@@ -9,26 +8,22 @@ use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
 use super::models::{InteriorRefList, ListParams, Model, Owner, Shop};
-use super::problem::{forbidden_no_api_key, forbidden_no_owner, reject_anyhow};
+use super::problem::{reject_anyhow, unauthorized_no_api_key, unauthorized_no_owner};
 use super::Environment;
-use crate::caches::Cache;
 
-#[instrument(level = "debug", skip(db, cache, api_key))]
-pub async fn authenticate(
-    db: &PgPool,
-    cache: &Cache<Uuid, i32>,
-    api_key: Option<Uuid>,
-) -> Result<i32> {
+#[instrument(level = "debug", skip(env, api_key))]
+pub async fn authenticate(env: &Environment, api_key: Option<Uuid>) -> Result<i32> {
     if let Some(api_key) = api_key {
-        cache
+        env.caches
+            .owner_ids_by_api_key
             .get(api_key, || async {
                 Ok(
                     sqlx::query!("SELECT id FROM owners WHERE api_key = $1", api_key)
-                        .fetch_one(db)
+                        .fetch_one(&env.db)
                         .await
                         .map_err(|error| {
                             if let sqlx::Error::RowNotFound = error {
-                                return forbidden_no_owner();
+                                return unauthorized_no_owner();
                             }
                             anyhow!(error)
                         })?
@@ -37,8 +32,7 @@ pub async fn authenticate(
             })
             .await
     } else {
-        // TODO: this should be 401 status instead
-        Err(forbidden_no_api_key())
+        Err(unauthorized_no_api_key())
     }
 }
 
@@ -69,10 +63,20 @@ pub async fn list_shops(
         .await
 }
 
-pub async fn create_shop(shop: Shop, env: Environment) -> Result<impl Reply, Rejection> {
-    // TODO: authenticate
-    // TODO: return 400 error with message if unique key is violated
-    let saved_shop = shop.save(&env.db).await.map_err(reject_anyhow)?;
+pub async fn create_shop(
+    shop: Shop,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let shop_with_owner_id = Shop {
+        owner_id: Some(owner_id),
+        ..shop
+    };
+    let saved_shop = shop_with_owner_id
+        .save(&env.db)
+        .await
+        .map_err(reject_anyhow)?;
     let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
     let reply = json(&saved_shop);
     let reply = with_header(reply, "Location", url.as_str());
@@ -86,9 +90,7 @@ pub async fn delete_shop(
     api_key: Option<Uuid>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let owner_id = authenticate(&env.db, &env.caches.owner_ids_by_api_key, api_key)
-        .await
-        .map_err(reject_anyhow)?;
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
     Shop::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
@@ -131,23 +133,34 @@ pub async fn list_owners(
 pub async fn create_owner(
     owner: Owner,
     remote_addr: Option<SocketAddr>,
+    api_key: Option<Uuid>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    // TODO: authenticate and get api_key from header
-    let owner_with_ip = match remote_addr {
-        Some(addr) => Owner {
-            ip_address: Some(IpNetwork::from(addr.ip())),
-            ..owner
-        },
-        None => owner,
-    };
-    let saved_owner = owner_with_ip.save(&env.db).await.map_err(reject_anyhow)?;
-    let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = json(&saved_owner);
-    let reply = with_header(reply, "Location", url.as_str());
-    let reply = with_status(reply, StatusCode::CREATED);
-    env.caches.list_owners.clear().await;
-    Ok(reply)
+    if let Some(api_key) = api_key {
+        let owner_with_ip_and_key = match remote_addr {
+            Some(addr) => Owner {
+                api_key: Some(api_key),
+                ip_address: Some(IpNetwork::from(addr.ip())),
+                ..owner
+            },
+            None => Owner {
+                api_key: Some(api_key),
+                ..owner
+            },
+        };
+        let saved_owner = owner_with_ip_and_key
+            .save(&env.db)
+            .await
+            .map_err(reject_anyhow)?;
+        let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
+        let reply = json(&saved_owner);
+        let reply = with_header(reply, "Location", url.as_str());
+        let reply = with_status(reply, StatusCode::CREATED);
+        env.caches.list_owners.clear().await;
+        Ok(reply)
+    } else {
+        Err(reject_anyhow(unauthorized_no_api_key()))
+    }
 }
 
 pub async fn delete_owner(
@@ -155,9 +168,7 @@ pub async fn delete_owner(
     api_key: Option<Uuid>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let owner_id = authenticate(&env.db, &env.caches.owner_ids_by_api_key, api_key)
-        .await
-        .map_err(reject_anyhow)?;
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
     Owner::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
@@ -204,10 +215,15 @@ pub async fn list_interior_ref_lists(
 
 pub async fn create_interior_ref_list(
     interior_ref_list: InteriorRefList,
+    api_key: Option<Uuid>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    // TODO: authenticate
-    let saved_interior_ref_list = interior_ref_list
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let ref_list_with_owner_id = InteriorRefList {
+        owner_id: Some(owner_id),
+        ..interior_ref_list
+    };
+    let saved_interior_ref_list = ref_list_with_owner_id
         .save(&env.db)
         .await
         .map_err(reject_anyhow)?;
@@ -226,9 +242,7 @@ pub async fn delete_interior_ref_list(
     api_key: Option<Uuid>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let owner_id = authenticate(&env.db, &env.caches.owner_ids_by_api_key, api_key)
-        .await
-        .map_err(reject_anyhow)?;
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
     InteriorRefList::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;

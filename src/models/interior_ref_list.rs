@@ -32,7 +32,7 @@ pub struct InteriorRef {
 pub struct InteriorRefList {
     pub id: Option<i32>,
     pub shop_id: i32,
-    pub owner_id: i32,
+    pub owner_id: Option<i32>,
     pub ref_list: Json<Vec<InteriorRef>>,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,

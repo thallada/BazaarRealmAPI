@@ -13,7 +13,7 @@ use crate::problem::forbidden_permission;
 pub struct Shop {
     pub id: Option<i32>,
     pub name: String,
-    pub owner_id: i32,
+    pub owner_id: Option<i32>,
     pub description: String,
     pub is_not_sell_buy: bool,
     pub sell_buy_list_id: i32,
@@ -41,7 +41,7 @@ impl Model for Shop {
             .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(db))]
+    #[instrument(level = "debug", skip(self, db))]
     async fn save(self, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,

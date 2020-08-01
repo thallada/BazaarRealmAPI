@@ -11,16 +11,16 @@ pub fn forbidden_permission() -> Error {
     )
 }
 
-pub fn forbidden_no_owner() -> Error {
+pub fn unauthorized_no_owner() -> Error {
     anyhow!(
-        HttpApiProblem::with_title_and_type_from_status(StatusCode::FORBIDDEN,)
+        HttpApiProblem::with_title_and_type_from_status(StatusCode::UNAUTHORIZED,)
             .set_detail("Api-Key not recognized")
     )
 }
 
-pub fn forbidden_no_api_key() -> Error {
+pub fn unauthorized_no_api_key() -> Error {
     anyhow!(
-        HttpApiProblem::with_title_and_type_from_status(StatusCode::FORBIDDEN,)
+        HttpApiProblem::with_title_and_type_from_status(StatusCode::UNAUTHORIZED,)
             .set_detail("Api-Key header not present")
     )
 }
@@ -42,14 +42,37 @@ pub fn from_anyhow(error: anyhow::Error) -> HttpApiProblem {
                     db_error.message(),
                     db_error.details().unwrap_or("")
                 );
+                dbg!(&db_error);
                 if let Some(code) = db_error.code() {
+                    dbg!(&code);
                     if let Some(constraint) = db_error.constraint_name() {
+                        dbg!(&constraint);
                         if code == "23503" && constraint == "shops_owner_id_fkey" {
                             // foreign_key_violation
                             return HttpApiProblem::with_title_and_type_from_status(
                                 StatusCode::BAD_REQUEST,
                             )
                             .set_detail("Owner does not exist");
+                        } else if code == "23505" && constraint == "owners_api_key_key" {
+                            // unique_violation
+                            return HttpApiProblem::with_title_and_type_from_status(
+                                StatusCode::BAD_REQUEST,
+                            )
+                            .set_detail("Owner with Api-Key already exists");
+                        } else if code == "23505" && constraint == "owners_unique_name_and_api_key"
+                        {
+                            // unique_violation
+                            return HttpApiProblem::with_title_and_type_from_status(
+                                StatusCode::BAD_REQUEST,
+                            )
+                            .set_detail("Duplicate owner with same name and Api-Key exists");
+                        } else if code == "23505" && constraint == "shops_unique_name_and_owner_id"
+                        {
+                            // unique_violation
+                            return HttpApiProblem::with_title_and_type_from_status(
+                                StatusCode::BAD_REQUEST,
+                            )
+                            .set_detail("Owner already has a shop with that name");
                         }
                     }
                 }
