@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use chrono::prelude::*;
 use ipnetwork::IpNetwork;
@@ -34,11 +34,10 @@ impl Model for Owner {
 
     #[instrument(level = "debug", skip(db))]
     async fn get(db: &PgPool, id: i32) -> Result<Self> {
-        Ok(
-            sqlx::query_as!(Self, "SELECT * FROM owners WHERE id = $1", id)
-                .fetch_one(db)
-                .await?,
-        )
+        sqlx::query_as!(Self, "SELECT * FROM owners WHERE id = $1", id)
+            .fetch_one(db)
+            .await
+            .map_err(Error::new)
     }
 
     #[instrument(level = "debug", skip(db))]
@@ -73,7 +72,7 @@ impl Model for Owner {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn list(db: &PgPool, list_params: ListParams) -> Result<Vec<Self>> {
+    async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
                 Self,

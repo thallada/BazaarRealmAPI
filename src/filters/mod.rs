@@ -45,7 +45,8 @@ pub fn get_shop(env: Environment) -> impl Filter<Extract = impl Reply, Error = R
 pub fn create_shop(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::post()
+    warp::path::end()
+        .and(warp::post())
         .and(json_body::<Shop>())
         .and(with_env(env))
         .and_then(handlers::create_shop)
@@ -64,7 +65,8 @@ pub fn delete_shop(
 pub fn list_shops(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::get()
+    warp::path::end()
+        .and(warp::get())
         .and(warp::query::<ListParams>())
         .and(with_env(env))
         .and_then(handlers::list_shops)
@@ -80,7 +82,8 @@ pub fn get_owner(env: Environment) -> impl Filter<Extract = impl Reply, Error = 
 pub fn create_owner(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::post()
+    warp::path::end()
+        .and(warp::post())
         .and(json_body::<Owner>())
         .and(warp::addr::remote())
         .and(with_env(env))
@@ -100,7 +103,8 @@ pub fn delete_owner(
 pub fn list_owners(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::get()
+    warp::path::end()
+        .and(warp::get())
         .and(warp::query::<ListParams>())
         .and(with_env(env))
         .and_then(handlers::list_owners)
@@ -118,7 +122,8 @@ pub fn get_interior_ref_list(
 pub fn create_interior_ref_list(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::post()
+    warp::path::end()
+        .and(warp::post())
         .and(json_body::<InteriorRefList>())
         .and(with_env(env))
         .and_then(handlers::create_interior_ref_list)
@@ -137,7 +142,8 @@ pub fn delete_interior_ref_list(
 pub fn list_interior_ref_lists(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::get()
+    warp::path::end()
+        .and(warp::get())
         .and(warp::query::<ListParams>())
         .and(with_env(env))
         .and_then(handlers::list_interior_ref_lists)

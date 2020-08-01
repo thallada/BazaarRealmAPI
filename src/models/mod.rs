@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use std::fmt;
+use std::hash::Hash;
 
 pub mod interior_ref_list;
 pub mod model;
@@ -11,7 +12,7 @@ pub use model::Model;
 pub use owner::Owner;
 pub use shop::Shop;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
 pub enum Order {
     Asc,
     Desc,
@@ -30,7 +31,7 @@ impl fmt::Display for Order {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
 pub struct ListParams {
     limit: Option<i64>,
     offset: Option<i64>,

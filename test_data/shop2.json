@@ -1,0 +1,9 @@
+{
+  "name": "Test Shop",
+  "owner_id": 2,
+  "description": "for testing",
+  "is_not_sell_buy": true,
+  "sell_buy_list_id": 1,
+  "vendor_id": 1,
+  "vendor_gold": 0
+}

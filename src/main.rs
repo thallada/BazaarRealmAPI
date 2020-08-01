@@ -12,11 +12,14 @@ use tracing_subscriber::fmt::format::FmtSpan;
 use url::Url;
 use warp::Filter;
 
+mod caches;
 mod db;
 mod filters;
 mod handlers;
 mod models;
 mod problem;
+
+use caches::Caches;
 
 #[derive(Clap)]
 #[clap(version = "0.1.0", author = "Tyler Hallada <tyler@hallada.net>")]
@@ -28,6 +31,7 @@ struct Opts {
 #[derive(Debug, Clone)]
 pub struct Environment {
     pub db: PgPool,
+    pub caches: Caches,
     pub api_url: Url,
 }
 
@@ -38,6 +42,7 @@ impl Environment {
                 .max_size(5)
                 .build(&env::var("DATABASE_URL")?)
                 .await?,
+            caches: Caches::initialize(),
             api_url,
         })
     }
