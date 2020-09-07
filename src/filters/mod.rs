@@ -1,3 +1,4 @@
+use http::StatusCode;
 use serde::de::DeserializeOwned;
 use std::convert::Infallible;
 use warp::{Filter, Rejection, Reply};
@@ -5,6 +6,12 @@ use warp::{Filter, Rejection, Reply};
 use super::handlers;
 use super::models::{InteriorRefList, ListParams, Owner, Shop};
 use super::Environment;
+
+pub fn status() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path::path("status")
+        .and(warp::get())
+        .map(|| StatusCode::OK) // TODO: return what api versions this server supports instead
+}
 
 pub fn shops(env: Environment) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path("shops").and(
@@ -88,6 +95,7 @@ pub fn create_owner(
         .and(json_body::<Owner>())
         .and(warp::addr::remote())
         .and(warp::header::optional("api-key"))
+        .and(warp::header::optional("x-real-ip"))
         .and(with_env(env))
         .and_then(handlers::create_owner)
 }

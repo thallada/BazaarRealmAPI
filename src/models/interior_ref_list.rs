@@ -17,15 +17,17 @@ use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct InteriorRef {
-    pub mod_name: String,
-    pub local_form_id: i32,
-    pub position_x: f64,
-    pub position_y: f64,
-    pub position_z: f64,
-    pub angle_x: f64,
-    pub angle_y: f64,
-    pub angle_z: f64,
-    pub scale: f64,
+    pub base_mod_name: String,
+    pub base_local_form_id: i32,
+    pub ref_mod_name: Option<String>,
+    pub ref_local_form_id: i32,
+    pub position_x: f32,
+    pub position_y: f32,
+    pub position_z: f32,
+    pub angle_x: f32,
+    pub angle_y: f32,
+    pub angle_z: f32,
+    pub scale: u16,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

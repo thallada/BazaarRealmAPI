@@ -19,7 +19,7 @@ pub struct Owner {
     pub api_key: Option<Uuid>,
     #[serde(skip_serializing)]
     pub ip_address: Option<IpNetwork>,
-    pub mod_version: String,
+    pub mod_version: i32,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
 }

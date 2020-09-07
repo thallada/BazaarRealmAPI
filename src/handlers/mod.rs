@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Result};
+use http::StatusCode;
 use ipnetwork::IpNetwork;
 use std::net::SocketAddr;
 use tracing::instrument;
 use uuid::Uuid;
-use warp::http::StatusCode;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
@@ -134,6 +134,7 @@ pub async fn create_owner(
     owner: Owner,
     remote_addr: Option<SocketAddr>,
     api_key: Option<Uuid>,
+    real_ip: Option<IpNetwork>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
     if let Some(api_key) = api_key {
@@ -145,6 +146,7 @@ pub async fn create_owner(
             },
             None => Owner {
                 api_key: Some(api_key),
+                ip_address: real_ip,
                 ..owner
             },
         };
@@ -186,6 +188,7 @@ pub async fn delete_owner(
     Ok(StatusCode::NO_CONTENT)
 }
 
+// TODO: probably need a way to get by shop id instead
 pub async fn get_interior_ref_list(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
     env.caches
         .interior_ref_list

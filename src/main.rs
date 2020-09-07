@@ -73,16 +73,16 @@ async fn main() -> Result<()> {
 
     let host = env::var("HOST").expect("`HOST` environment variable not defined");
     let host_url = Url::parse(&host).expect("Cannot parse URL from `HOST` environment variable");
-    let api_url = host_url.join("/api/v1/")?;
+    let api_url = host_url.join("/v1/")?;
     let env = Environment::new(api_url).await?;
 
-    let base = warp::path("api").and(warp::path("v1"));
-    let routes = base
-        .and(
+    let base = warp::path("v1");
+    let routes = filters::status()
+        .or(base.and(
             filters::shops(env.clone())
                 .or(filters::owners(env.clone()))
                 .or(filters::interior_ref_lists(env.clone())),
-        )
+        ))
         .recover(problem::unpack_problem)
         .with(warp::compression::gzip())
         .with(warp::trace::request());
@@ -97,7 +97,7 @@ async fn main() -> Result<()> {
     let server = if let Some(l) = listenfd.take_tcp_listener(0)? {
         Server::from_tcp(l)?
     } else {
-        Server::bind(&([0, 0, 0, 0], 3030).into())
+        Server::bind(&([127, 0, 0, 1], 3030).into())
     };
 
     // warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;

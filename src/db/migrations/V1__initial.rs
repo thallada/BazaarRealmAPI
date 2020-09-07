@@ -8,7 +8,7 @@ pub fn migration() -> String {
         t.add_column("name", types::varchar(255));
         t.add_column("api_key", types::uuid().indexed(true));
         t.add_column("ip_address", types::custom("inet").nullable(true));
-        t.add_column("mod_version", types::varchar(25));
+        t.add_column("mod_version", types::integer());
         t.add_column("created_at", types::custom("timestamp(3)"));
         t.add_column("updated_at", types::custom("timestamp(3)"));
         t.add_index(
@@ -22,10 +22,11 @@ pub fn migration() -> String {
         t.add_column("name", types::varchar(255));
         t.add_column("owner_id", types::foreign("owners", "id").indexed(true));
         t.add_column("description", types::text().nullable(true));
-        t.add_column("is_not_sell_buy", types::boolean().default(true));
-        t.add_column("sell_buy_list_id", types::integer().default(0));
-        t.add_column("vendor_id", types::integer());
-        t.add_column("vendor_gold", types::integer());
+        // removing these until I figure out the plan for buying and selling
+        // t.add_column("is_not_sell_buy", types::boolean().default(true));
+        // t.add_column("sell_buy_list_id", types::integer().default(0));
+        // t.add_column("vendor_id", types::integer());
+        // t.add_column("vendor_gold", types::integer());
         t.add_column("created_at", types::custom("timestamp(3)"));
         t.add_column("updated_at", types::custom("timestamp(3)"));
         t.add_index(
