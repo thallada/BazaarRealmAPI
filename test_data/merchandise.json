@@ -1,0 +1,42 @@
+{
+  "shop_id": 1,
+  "owner_id": 1,
+  "form_list": [
+    {
+      "mod_name": "Skyrim.esm",
+      "local_form_id": 1,
+      "name": "Misc Item",
+      "quantity": 1,
+      "form_type": 32,
+      "is_food": false,
+      "price": 1
+    },
+    {
+      "mod_name": "Skyrim.esm",
+      "local_form_id": 2,
+      "name": "Scroll",
+      "quantity": 2,
+      "form_type": 23,
+      "is_food": false,
+      "price": 2
+    },
+    {
+      "mod_name": "Skyrim.esm",
+      "local_form_id": 3,
+      "name": "Alchemy Item",
+      "quantity": 3,
+      "form_type": 46,
+      "is_food": true,
+      "price": 3
+    },
+    {
+      "mod_name": "Skyrim.esm",
+      "local_form_id": 4,
+      "name": "Weapon",
+      "quantity": 4,
+      "form_type": 41,
+      "is_food": false,
+      "price": 4
+    }
+  ]
+}

@@ -81,7 +81,8 @@ async fn main() -> Result<()> {
         .or(base.and(
             filters::shops(env.clone())
                 .or(filters::owners(env.clone()))
-                .or(filters::interior_ref_lists(env.clone())),
+                .or(filters::interior_ref_lists(env.clone()))
+                .or(filters::merchandise_lists(env.clone())),
         ))
         .recover(problem::unpack_problem)
         .with(warp::compression::gzip())

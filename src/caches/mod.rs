@@ -15,9 +15,11 @@ pub struct Caches {
     pub shop: Cache<i32, CachedResponse>,
     pub owner: Cache<i32, CachedResponse>,
     pub interior_ref_list: Cache<i32, CachedResponse>,
+    pub merchandise_list: Cache<i32, CachedResponse>,
     pub list_shops: Cache<ListParams, CachedResponse>,
     pub list_owners: Cache<ListParams, CachedResponse>,
     pub list_interior_ref_lists: Cache<ListParams, CachedResponse>,
+    pub list_merchandise_lists: Cache<ListParams, CachedResponse>,
 }
 
 impl Caches {
@@ -27,9 +29,11 @@ impl Caches {
             shop: Cache::new("shop", 100),
             owner: Cache::new("owner", 100),
             interior_ref_list: Cache::new("interior_ref_list", 100),
+            merchandise_list: Cache::new("merchandise_list", 100),
             list_shops: Cache::new("list_shops", 100),
             list_owners: Cache::new("list_owners", 100),
             list_interior_ref_lists: Cache::new("list_interior_ref_lists", 100),
+            list_merchandise_lists: Cache::new("list_merchandise_lists", 100),
         }
     }
 }

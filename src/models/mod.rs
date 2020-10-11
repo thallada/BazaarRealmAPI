@@ -3,6 +3,7 @@ use std::fmt;
 use std::hash::Hash;
 
 pub mod interior_ref_list;
+pub mod merchandise_list;
 pub mod model;
 pub mod owner;
 pub mod shop;
@@ -11,6 +12,7 @@ pub use interior_ref_list::InteriorRefList;
 pub use model::Model;
 pub use owner::Owner;
 pub use shop::Shop;
+pub use merchandise_list::MerchandiseList;
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
 pub enum Order {

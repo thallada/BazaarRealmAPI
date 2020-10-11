@@ -7,7 +7,7 @@ use uuid::Uuid;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
-use super::models::{InteriorRefList, ListParams, Model, Owner, Shop};
+use super::models::{InteriorRefList, ListParams, Model, Owner, Shop, MerchandiseList};
 use super::problem::{reject_anyhow, unauthorized_no_api_key, unauthorized_no_owner};
 use super::Environment;
 
@@ -255,5 +255,75 @@ pub async fn delete_interior_ref_list(
         .await
         .map_err(reject_anyhow)?;
     env.caches.list_interior_ref_lists.clear().await;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+// TODO: probably need a way to get by shop id instead
+pub async fn get_merchandise_list(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
+    env.caches
+        .merchandise_list
+        .get_response(id, || async {
+            let merchandise_list = MerchandiseList::get(&env.db, id).await?;
+            let reply = json(&merchandise_list);
+            let reply = with_status(reply, StatusCode::OK);
+            Ok(reply)
+        })
+        .await
+}
+
+pub async fn list_merchandise_lists(
+    list_params: ListParams,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    env.caches
+        .list_merchandise_lists
+        .get_response(list_params.clone(), || async {
+            let merchandise_lists = MerchandiseList::list(&env.db, &list_params).await?;
+            let reply = json(&merchandise_lists);
+            let reply = with_status(reply, StatusCode::OK);
+            Ok(reply)
+        })
+        .await
+}
+
+pub async fn create_merchandise_list(
+    merchandise_list: MerchandiseList,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let ref_list_with_owner_id = MerchandiseList {
+        owner_id: Some(owner_id),
+        ..merchandise_list
+    };
+    let saved_merchandise_list = ref_list_with_owner_id
+        .save(&env.db)
+        .await
+        .map_err(reject_anyhow)?;
+    let url = saved_merchandise_list
+        .url(&env.api_url)
+        .map_err(reject_anyhow)?;
+    let reply = json(&saved_merchandise_list);
+    let reply = with_header(reply, "Location", url.as_str());
+    let reply = with_status(reply, StatusCode::CREATED);
+    env.caches.list_merchandise_lists.clear().await;
+    Ok(reply)
+}
+
+pub async fn delete_merchandise_list(
+    id: i32,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    MerchandiseList::delete(&env.db, owner_id, id)
+        .await
+        .map_err(reject_anyhow)?;
+    env.caches
+        .merchandise_list
+        .delete_response(id)
+        .await
+        .map_err(reject_anyhow)?;
+    env.caches.list_merchandise_lists.clear().await;
     Ok(StatusCode::NO_CONTENT)
 }

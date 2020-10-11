@@ -4,7 +4,7 @@ use std::convert::Infallible;
 use warp::{Filter, Rejection, Reply};
 
 use super::handlers;
-use super::models::{InteriorRefList, ListParams, Owner, Shop};
+use super::models::{InteriorRefList, ListParams, MerchandiseList, Owner, Shop};
 use super::Environment;
 
 pub fn status() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -39,6 +39,17 @@ pub fn interior_ref_lists(
             .or(delete_interior_ref_list(env.clone()))
             .or(create_interior_ref_list(env.clone()))
             .or(list_interior_ref_lists(env)),
+    )
+}
+
+pub fn merchandise_lists(
+    env: Environment,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path("merchandise_lists").and(
+        get_merchandise_list(env.clone())
+            .or(delete_merchandise_list(env.clone()))
+            .or(create_merchandise_list(env.clone()))
+            .or(list_merchandise_lists(env)),
     )
 }
 
@@ -158,6 +169,46 @@ pub fn list_interior_ref_lists(
         .and(warp::query::<ListParams>())
         .and(with_env(env))
         .and_then(handlers::list_interior_ref_lists)
+}
+
+pub fn get_merchandise_list(
+    env: Environment,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path::param()
+        .and(warp::get())
+        .and(with_env(env))
+        .and_then(handlers::get_merchandise_list)
+}
+
+pub fn create_merchandise_list(
+    env: Environment,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path::end()
+        .and(warp::post())
+        .and(json_body::<MerchandiseList>())
+        .and(warp::header::optional("api-key"))
+        .and(with_env(env))
+        .and_then(handlers::create_merchandise_list)
+}
+
+pub fn delete_merchandise_list(
+    env: Environment,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path::param()
+        .and(warp::delete())
+        .and(warp::header::optional("api-key"))
+        .and(with_env(env))
+        .and_then(handlers::delete_merchandise_list)
+}
+
+pub fn list_merchandise_lists(
+    env: Environment,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path::end()
+        .and(warp::get())
+        .and(warp::query::<ListParams>())
+        .and(with_env(env))
+        .and_then(handlers::list_merchandise_lists)
 }
 
 fn with_env(env: Environment) -> impl Filter<Extract = (Environment,), Error = Infallible> + Clone {
