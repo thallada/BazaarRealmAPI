@@ -29,8 +29,11 @@ Related projects:
 
 * [`BazaarRealmClient`](https://github.com/thallada/BazaarRealmClient): DLL that
   handles requests and responses to this API
-* [`BazaarRealmPlugin`](https://github.com/thallada/BazaarRealmPlugin): SKSE
-  plugin for the mod that modifies data within the Skyrim game engine
+* [`BazaarRealmPlugin`](https://github.com/thallada/BazaarRealmPlugin):
+  [SKSE](https://skse.silverlock.org/) plugin for the mod that modifies data
+  within the Skyrim game engine
+* [`BazaarRealmMod`](https://github.com/thallada/BazaarRealmMod): Papyrus
+  scripts, ESP plugin, and all other resources for the mod
 
 ## Development Setup
 
