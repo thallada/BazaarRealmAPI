@@ -58,7 +58,7 @@ struct ErrorMessage {
 async fn main() -> Result<()> {
     dotenv().ok();
     let env_log_filter =
-        env::var("RUST_LOG").unwrap_or_else(|_| "warp=info,shopkeeper=info".to_owned());
+        env::var("RUST_LOG").unwrap_or_else(|_| "warp=info,bazaar_realm_api=info".to_owned());
     tracing_subscriber::fmt()
         .with_env_filter(env_log_filter)
         .with_span_events(FmtSpan::CLOSE)
