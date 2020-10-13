@@ -25,6 +25,13 @@ It uses the [`warp`](https://crates.io/crates/warp) web server framework and
 [`sqlx`](https://crates.io/crates/sqlx) for database queries to a [PostgreSQL
 database](https://www.postgresql.org).
 
+Related projects:
+
+* [`BazaarRealmClient`](https://github.com/thallada/BazaarRealmClient): DLL that
+  handles requests and responses to this API
+* [`BazaarRealmPlugin`](https://github.com/thallada/BazaarRealmPlugin): SKSE
+  plugin for the mod that modifies data within the Skyrim game engine
+
 ## Development Setup
 
 1. Install and run postgres.
@@ -103,7 +110,7 @@ Yes, it's not most secure solution, but I'm not convinced security is a huge
 concern here. As long as users don't share their API key or the save game
 files that contain it, their data should be secure.
 
-# Todo
+## Todo
 
 * Add update endpoints.
 * Add endpoints for the other models.
