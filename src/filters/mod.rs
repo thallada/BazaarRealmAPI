@@ -17,6 +17,7 @@ pub fn shops(env: Environment) -> impl Filter<Extract = impl Reply, Error = Reje
     warp::path("shops").and(
         get_shop(env.clone())
             .or(delete_shop(env.clone()))
+            .or(update_shop(env.clone()))
             .or(create_shop(env.clone()))
             .or(list_shops(env)),
     )
@@ -26,6 +27,7 @@ pub fn owners(env: Environment) -> impl Filter<Extract = impl Reply, Error = Rej
     warp::path("owners").and(
         get_owner(env.clone())
             .or(delete_owner(env.clone()))
+            .or(update_owner(env.clone()))
             .or(create_owner(env.clone()))
             .or(list_owners(env)),
     )
@@ -81,6 +83,17 @@ pub fn delete_shop(
         .and_then(handlers::delete_shop)
 }
 
+pub fn update_shop(
+    env: Environment,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path::param()
+        .and(warp::patch())
+        .and(json_body::<Shop>())
+        .and(warp::header::optional("api-key"))
+        .and(with_env(env))
+        .and_then(handlers::update_shop)
+}
+
 pub fn list_shops(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -119,6 +132,17 @@ pub fn delete_owner(
         .and(warp::header::optional("api-key"))
         .and(with_env(env))
         .and_then(handlers::delete_owner)
+}
+
+pub fn update_owner(
+    env: Environment,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path::param()
+        .and(warp::patch())
+        .and(json_body::<Owner>())
+        .and(warp::header::optional("api-key"))
+        .and(with_env(env))
+        .and_then(handlers::update_owner)
 }
 
 pub fn list_owners(

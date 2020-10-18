@@ -59,7 +59,7 @@ impl Model for InteriorRefList {
     }
 
     #[instrument(level = "debug", skip(self, db))]
-    async fn save(self, db: &PgPool) -> Result<Self> {
+    async fn create(self, db: &PgPool) -> Result<Self> {
         // TODO:
         // * Decide if I'll need to make the same changes to merchandise and transactions
         //      - answer depends on how many rows of each I expect to insert in one go

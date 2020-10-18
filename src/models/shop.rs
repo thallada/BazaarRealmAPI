@@ -6,7 +6,7 @@ use sqlx::postgres::PgPool;
 use tracing::instrument;
 
 use super::ListParams;
-use super::Model;
+use super::{Model, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -43,7 +43,7 @@ impl Model for Shop {
     }
 
     #[instrument(level = "debug", skip(self, db))]
-    async fn save(self, db: &PgPool) -> Result<Self> {
+    async fn create(self, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
             "INSERT INTO shops
@@ -100,5 +100,36 @@ impl Model for Shop {
             .await?
         };
         Ok(result)
+    }
+}
+
+
+#[async_trait]
+impl UpdateableModel for Shop {
+    #[instrument(level = "debug", skip(self, db))]
+    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+        let shop = sqlx::query!("SELECT owner_id FROM shops WHERE id = $1", id)
+            .fetch_one(db)
+            .await?;
+        if shop.owner_id == owner_id {
+            Ok(sqlx::query_as!(
+                Self,
+                "UPDATE shops SET
+                name = $2,
+                owner_id = $3,
+                description = $4,
+                updated_at = now()
+                WHERE id = $1
+                RETURNING *",
+                id,
+                self.name,
+                self.owner_id,
+                self.description,
+            )
+            .fetch_one(db)
+            .await?)
+        } else {
+            return Err(forbidden_permission());
+        }
     }
 }

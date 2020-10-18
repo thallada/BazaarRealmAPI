@@ -23,7 +23,15 @@ where
         }
     }
     async fn get(db: &PgPool, id: i32) -> Result<Self>;
-    async fn save(self, db: &PgPool) -> Result<Self>;
+    async fn create(self, db: &PgPool) -> Result<Self>;
     async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64>;
     async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>>;
+}
+
+#[async_trait]
+pub trait UpdateableModel
+where
+    Self: std::marker::Sized,
+{
+    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self>;
 }

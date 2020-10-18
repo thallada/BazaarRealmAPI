@@ -8,7 +8,7 @@ use tracing::instrument;
 use uuid::Uuid;
 
 use super::ListParams;
-use super::Model;
+use super::{Model, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -43,7 +43,7 @@ impl Model for Owner {
     }
 
     #[instrument(level = "debug", skip(self, db))]
-    async fn save(self, db: &PgPool) -> Result<Self> {
+    async fn create(self, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
             "INSERT INTO owners
@@ -101,5 +101,33 @@ impl Model for Owner {
             .await?
         };
         Ok(result)
+    }
+}
+
+#[async_trait]
+impl UpdateableModel for Owner {
+    #[instrument(level = "debug", skip(self, db))]
+    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+        let owner = sqlx::query!("SELECT id FROM owners WHERE id = $1", id)
+            .fetch_one(db)
+            .await?;
+        if owner.id == owner_id {
+            Ok(sqlx::query_as!(
+                Self,
+                "UPDATE owners SET
+                name = $2,
+                mod_version = $3,
+                updated_at = now()
+                WHERE id = $1
+                RETURNING *",
+                id,
+                self.name,
+                self.mod_version,
+            )
+            .fetch_one(db)
+            .await?)
+        } else {
+            return Err(forbidden_permission());
+        }
     }
 }

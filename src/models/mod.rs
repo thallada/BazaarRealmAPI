@@ -9,7 +9,7 @@ pub mod owner;
 pub mod shop;
 
 pub use interior_ref_list::InteriorRefList;
-pub use model::Model;
+pub use model::{Model, UpdateableModel};
 pub use owner::Owner;
 pub use shop::Shop;
 pub use merchandise_list::MerchandiseList;

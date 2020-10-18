@@ -7,7 +7,7 @@ use uuid::Uuid;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
-use super::models::{InteriorRefList, ListParams, Model, Owner, Shop, MerchandiseList};
+use super::models::{InteriorRefList, ListParams, Model, UpdateableModel, Owner, Shop, MerchandiseList};
 use super::problem::{reject_anyhow, unauthorized_no_api_key, unauthorized_no_owner};
 use super::Environment;
 
@@ -74,13 +74,50 @@ pub async fn create_shop(
         ..shop
     };
     let saved_shop = shop_with_owner_id
-        .save(&env.db)
+        .create(&env.db)
         .await
         .map_err(reject_anyhow)?;
     let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
     let reply = json(&saved_shop);
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
+    env.caches.list_shops.clear().await;
+    Ok(reply)
+}
+
+pub async fn update_shop(
+    id: i32,
+    shop: Shop,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let shop_with_id_and_owner_id = if shop.owner_id.is_some() {
+        // allows an owner to transfer ownership of shop to another owner
+        Shop {
+            id: Some(id),
+            ..shop
+        }
+    } else {
+        Shop {
+            id: Some(id),
+            owner_id: Some(owner_id),
+            ..shop
+        }
+    };
+    let updated_shop = shop_with_id_and_owner_id
+        .update(&env.db, owner_id, id)
+        .await
+        .map_err(reject_anyhow)?;
+    let url = updated_shop.url(&env.api_url).map_err(reject_anyhow)?;
+    let reply = json(&updated_shop);
+    let reply = with_header(reply, "Location", url.as_str());
+    let reply = with_status(reply, StatusCode::CREATED);
+    env.caches
+        .shop
+        .delete_response(id)
+        .await
+        .map_err(reject_anyhow)?;
     env.caches.list_shops.clear().await;
     Ok(reply)
 }
@@ -151,7 +188,7 @@ pub async fn create_owner(
             },
         };
         let saved_owner = owner_with_ip_and_key
-            .save(&env.db)
+            .create(&env.db)
             .await
             .map_err(reject_anyhow)?;
         let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
@@ -163,6 +200,34 @@ pub async fn create_owner(
     } else {
         Err(reject_anyhow(unauthorized_no_api_key()))
     }
+}
+
+pub async fn update_owner(
+    id: i32,
+    owner: Owner,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let owner_with_id = Owner {
+        id: Some(id),
+        ..owner
+    };
+    let updated_owner = owner_with_id
+        .update(&env.db, owner_id, id)
+        .await
+        .map_err(reject_anyhow)?;
+    let url = updated_owner.url(&env.api_url).map_err(reject_anyhow)?;
+    let reply = json(&updated_owner);
+    let reply = with_header(reply, "Location", url.as_str());
+    let reply = with_status(reply, StatusCode::CREATED);
+    env.caches
+        .owner
+        .delete_response(id)
+        .await
+        .map_err(reject_anyhow)?;
+    env.caches.list_owners.clear().await;
+    Ok(reply)
 }
 
 pub async fn delete_owner(
@@ -227,7 +292,7 @@ pub async fn create_interior_ref_list(
         ..interior_ref_list
     };
     let saved_interior_ref_list = ref_list_with_owner_id
-        .save(&env.db)
+        .create(&env.db)
         .await
         .map_err(reject_anyhow)?;
     let url = saved_interior_ref_list
@@ -297,7 +362,7 @@ pub async fn create_merchandise_list(
         ..merchandise_list
     };
     let saved_merchandise_list = ref_list_with_owner_id
-        .save(&env.db)
+        .create(&env.db)
         .await
         .map_err(reject_anyhow)?;
     let url = saved_merchandise_list

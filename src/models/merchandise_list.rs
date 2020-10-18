@@ -55,7 +55,7 @@ impl Model for MerchandiseList {
     }
 
     #[instrument(level = "debug", skip(self, db))]
-    async fn save(self, db: &PgPool) -> Result<Self> {
+    async fn create(self, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as_unchecked!(
             Self,
             "INSERT INTO merchandise_lists
