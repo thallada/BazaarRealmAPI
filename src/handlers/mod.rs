@@ -7,7 +7,9 @@ use uuid::Uuid;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
-use super::models::{InteriorRefList, ListParams, Model, UpdateableModel, Owner, Shop, MerchandiseList};
+use super::models::{
+    InteriorRefList, ListParams, MerchandiseList, Model, Owner, Shop, UpdateableModel,
+};
 use super::problem::{reject_anyhow, unauthorized_no_api_key, unauthorized_no_owner};
 use super::Environment;
 
@@ -137,6 +139,10 @@ pub async fn delete_shop(
         .await
         .map_err(reject_anyhow)?;
     env.caches.list_shops.clear().await;
+    env.caches
+        .latest_interior_ref_list_by_shop_id
+        .delete(id)
+        .await;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -247,13 +253,11 @@ pub async fn delete_owner(
     env.caches
         .owner_ids_by_api_key
         .delete(api_key.expect("api-key has been validated during authenticate"))
-        .await
-        .map_err(reject_anyhow)?;
+        .await;
     env.caches.list_owners.clear().await;
     Ok(StatusCode::NO_CONTENT)
 }
 
-// TODO: probably need a way to get by shop id instead
 pub async fn get_interior_ref_list(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
     env.caches
         .interior_ref_list
@@ -302,6 +306,10 @@ pub async fn create_interior_ref_list(
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches.list_interior_ref_lists.clear().await;
+    env.caches
+        .latest_interior_ref_list_by_shop_id
+        .delete(saved_interior_ref_list.shop_id)
+        .await;
     Ok(reply)
 }
 
@@ -311,6 +319,9 @@ pub async fn delete_interior_ref_list(
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let interior_ref_list = InteriorRefList::get(&env.db, id)
+        .await
+        .map_err(reject_anyhow)?;
     InteriorRefList::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
@@ -320,7 +331,27 @@ pub async fn delete_interior_ref_list(
         .await
         .map_err(reject_anyhow)?;
     env.caches.list_interior_ref_lists.clear().await;
+    env.caches
+        .latest_interior_ref_list_by_shop_id
+        .delete(interior_ref_list.shop_id)
+        .await;
     Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn get_latest_interior_ref_list_by_shop_id(
+    shop_id: i32,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    env.caches
+        .latest_interior_ref_list_by_shop_id
+        .get_response(shop_id, || async {
+            let interior_ref_list =
+                InteriorRefList::get_latest_by_shop_id(&env.db, shop_id).await?;
+            let reply = json(&interior_ref_list);
+            let reply = with_status(reply, StatusCode::OK);
+            Ok(reply)
+        })
+        .await
 }
 
 // TODO: probably need a way to get by shop id instead

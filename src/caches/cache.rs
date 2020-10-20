@@ -68,12 +68,12 @@ where
         Ok(value)
     }
 
-    pub async fn delete(&self, key: K) -> Result<Option<V>> {
+    pub async fn delete(&self, key: K) -> Option<V> {
         let mut guard = self.lru_mutex.lock().await;
         let value = guard.pop(&key);
         self.log_with_key(&key, "delete");
 
-        Ok(value)
+        value
     }
 
     pub async fn clear(&self) {

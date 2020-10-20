@@ -7,6 +7,7 @@ use tracing::instrument;
 
 use super::ListParams;
 use super::{Model, UpdateableModel};
+use crate::models::InteriorRefList;
 use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -102,7 +103,6 @@ impl Model for Shop {
         Ok(result)
     }
 }
-
 
 #[async_trait]
 impl UpdateableModel for Shop {

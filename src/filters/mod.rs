@@ -19,7 +19,8 @@ pub fn shops(env: Environment) -> impl Filter<Extract = impl Reply, Error = Reje
             .or(delete_shop(env.clone()))
             .or(update_shop(env.clone()))
             .or(create_shop(env.clone()))
-            .or(list_shops(env)),
+            .or(list_shops(env.clone()))
+            .or(get_latest_interior_ref_list_by_shop_id(env)),
     )
 }
 
@@ -57,6 +58,7 @@ pub fn merchandise_lists(
 
 pub fn get_shop(env: Environment) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::get())
         .and(with_env(env))
         .and_then(handlers::get_shop)
@@ -77,6 +79,7 @@ pub fn delete_shop(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::delete())
         .and(warp::header::optional("api-key"))
         .and(with_env(env))
@@ -106,6 +109,7 @@ pub fn list_shops(
 
 pub fn get_owner(env: Environment) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::get())
         .and(with_env(env))
         .and_then(handlers::get_owner)
@@ -128,6 +132,7 @@ pub fn delete_owner(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::delete())
         .and(warp::header::optional("api-key"))
         .and(with_env(env))
@@ -138,6 +143,7 @@ pub fn update_owner(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::patch())
         .and(json_body::<Owner>())
         .and(warp::header::optional("api-key"))
@@ -159,6 +165,7 @@ pub fn get_interior_ref_list(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::get())
         .and(with_env(env))
         .and_then(handlers::get_interior_ref_list)
@@ -179,6 +186,7 @@ pub fn delete_interior_ref_list(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::delete())
         .and(warp::header::optional("api-key"))
         .and(with_env(env))
@@ -195,10 +203,22 @@ pub fn list_interior_ref_lists(
         .and_then(handlers::list_interior_ref_lists)
 }
 
+pub fn get_latest_interior_ref_list_by_shop_id(
+    env: Environment,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path::param()
+        .and(warp::path("latest_interior_ref_list"))
+        .and(warp::path::end())
+        .and(warp::get())
+        .and(with_env(env))
+        .and_then(handlers::get_latest_interior_ref_list_by_shop_id)
+}
+
 pub fn get_merchandise_list(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::get())
         .and(with_env(env))
         .and_then(handlers::get_merchandise_list)
@@ -219,6 +239,7 @@ pub fn delete_merchandise_list(
     env: Environment,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path::param()
+        .and(warp::path::end())
         .and(warp::delete())
         .and(warp::header::optional("api-key"))
         .and(with_env(env))

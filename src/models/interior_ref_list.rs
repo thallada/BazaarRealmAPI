@@ -125,3 +125,21 @@ impl Model for InteriorRefList {
         Ok(result)
     }
 }
+
+impl InteriorRefList {
+    #[instrument(level = "debug", skip(db))]
+    pub async fn get_latest_by_shop_id(db: &PgPool, shop_id: i32) -> Result<Self> {
+        sqlx::query_as_unchecked!(
+            Self,
+            "SELECT interior_ref_lists.* FROM interior_ref_lists
+            INNER JOIN shops ON (interior_ref_lists.shop_id = shops.id)
+            WHERE shops.id = $1
+            ORDER BY interior_ref_lists.created_at DESC
+            LIMIT 1",
+            shop_id,
+        )
+        .fetch_one(db)
+        .await
+        .map_err(Error::new)
+    }
+}
