@@ -7,7 +7,6 @@ use tracing::instrument;
 
 use super::ListParams;
 use super::{Model, UpdateableModel};
-use crate::models::InteriorRefList;
 use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

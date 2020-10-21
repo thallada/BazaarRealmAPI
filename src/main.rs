@@ -1,9 +1,10 @@
 use anyhow::Result;
 use clap::Clap;
 use dotenv::dotenv;
+use http::StatusCode;
 use hyper::server::Server;
 use listenfd::ListenFd;
-use serde::Serialize;
+use serde::{de::DeserializeOwned, Serialize};
 use sqlx::postgres::PgPool;
 use std::convert::Infallible;
 use std::env;
@@ -14,12 +15,18 @@ use warp::Filter;
 
 mod caches;
 mod db;
-mod filters;
 mod handlers;
+#[macro_use]
+mod macros;
 mod models;
 mod problem;
 
 use caches::Caches;
+use models::interior_ref_list::InteriorRefList;
+use models::merchandise_list::MerchandiseList;
+use models::owner::Owner;
+use models::shop::Shop;
+use models::ListParams;
 
 #[derive(Clap)]
 #[clap(version = "0.1.0", author = "Tyler Hallada <tyler@hallada.net>")]
@@ -54,6 +61,16 @@ struct ErrorMessage {
     message: String,
 }
 
+fn with_env(env: Environment) -> impl Filter<Extract = (Environment,), Error = Infallible> + Clone {
+    warp::any().map(move || env.clone())
+}
+
+fn json_body<T>() -> impl Filter<Extract = (T,), Error = warp::Rejection> + Clone
+where
+    T: Send + DeserializeOwned,
+{
+    warp::body::content_length_limit(1024 * 64).and(warp::body::json())
+}
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv().ok();
@@ -76,13 +93,180 @@ async fn main() -> Result<()> {
     let api_url = host_url.join("/v1/")?;
     let env = Environment::new(api_url).await?;
 
-    let base = warp::path("v1");
-    let routes = filters::status()
-        .or(base.and(
-            filters::shops(env.clone())
-                .or(filters::owners(env.clone()))
-                .or(filters::interior_ref_lists(env.clone()))
-                .or(filters::merchandise_lists(env.clone())),
+    let status_handler = warp::path::path("status")
+        .and(warp::path::end())
+        .and(warp::get())
+        .map(|| StatusCode::OK); // TODO: return what api versions this server supports instead
+    let get_owner_handler = warp::path("owners").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::get())
+            .and(with_env(env.clone()))
+            .and_then(handlers::get_owner),
+    );
+    let create_owner_handler = warp::path("owners").and(
+        warp::path::end()
+            .and(warp::post())
+            .and(json_body::<Owner>())
+            .and(warp::addr::remote())
+            .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("x-real-ip"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::create_owner),
+    );
+    let delete_owner_handler = warp::path("owners").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::delete())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::delete_owner),
+    );
+    let update_owner_handler = warp::path("owners").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::patch())
+            .and(json_body::<Owner>())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::update_owner),
+    );
+    let list_owners_handler = warp::path("owners").and(
+        warp::path::end()
+            .and(warp::get())
+            .and(warp::query::<ListParams>())
+            .and(with_env(env.clone()))
+            .and_then(handlers::list_owners),
+    );
+    let get_shop_handler = warp::path("shops").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::get())
+            .and(with_env(env.clone()))
+            .and_then(handlers::get_shop),
+    );
+    let create_shop_handler = warp::path("shops").and(
+        warp::path::end()
+            .and(warp::post())
+            .and(json_body::<Shop>())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::create_shop),
+    );
+    let delete_shop_handler = warp::path("shops").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::delete())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::delete_shop),
+    );
+    let update_shop_handler = warp::path("shops").and(
+        warp::path::param()
+            .and(warp::patch())
+            .and(json_body::<Shop>())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::update_shop),
+    );
+    let list_shops_handler = warp::path("shops").and(
+        warp::path::end()
+            .and(warp::get())
+            .and(warp::query::<ListParams>())
+            .and(with_env(env.clone()))
+            .and_then(handlers::list_shops),
+    );
+    let get_interior_ref_list_handler = warp::path("interior_ref_lists").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::get())
+            .and(with_env(env.clone()))
+            .and_then(handlers::get_interior_ref_list),
+    );
+    let create_interior_ref_list_handler = warp::path("interior_ref_lists").and(
+        warp::path::end()
+            .and(warp::post())
+            .and(json_body::<InteriorRefList>())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::create_interior_ref_list),
+    );
+    let delete_interior_ref_list_handler = warp::path("interior_ref_lists").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::delete())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::delete_interior_ref_list),
+    );
+    let list_interior_ref_lists_handler = warp::path("interior_ref_lists").and(
+        warp::path::end()
+            .and(warp::get())
+            .and(warp::query::<ListParams>())
+            .and(with_env(env.clone()))
+            .and_then(handlers::list_interior_ref_lists),
+    );
+    let get_latest_interior_ref_list_by_shop_id_handler = warp::path("shops").and(
+        warp::path::param()
+            .and(warp::path("latest_interior_ref_list"))
+            .and(warp::path::end())
+            .and(warp::get())
+            .and(with_env(env.clone()))
+            .and_then(handlers::get_latest_interior_ref_list_by_shop_id),
+    );
+    let get_merchandise_list_handler = warp::path("merchandise_lists").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::get())
+            .and(with_env(env.clone()))
+            .and_then(handlers::get_merchandise_list),
+    );
+    let create_merchandise_list_handler = warp::path("merchandise_lists").and(
+        warp::path::end()
+            .and(warp::post())
+            .and(json_body::<MerchandiseList>())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::create_merchandise_list),
+    );
+    let delete_merchandise_list_handler = warp::path("merchandise_lists").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::delete())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::delete_merchandise_list),
+    );
+    let list_merchandise_lists_handler = warp::path("merchandise_lists").and(
+        warp::path::end()
+            .and(warp::get())
+            .and(warp::query::<ListParams>())
+            .and(with_env(env.clone()))
+            .and_then(handlers::list_merchandise_lists),
+    );
+
+    let routes = warp::path("v1")
+        .and(balanced_or_tree!(
+            status_handler,
+            get_owner_handler,
+            delete_owner_handler,
+            update_owner_handler,
+            create_owner_handler,
+            list_owners_handler,
+            get_shop_handler,
+            delete_shop_handler,
+            update_shop_handler,
+            create_shop_handler,
+            list_shops_handler,
+            get_latest_interior_ref_list_by_shop_id_handler,
+            get_interior_ref_list_handler,
+            delete_interior_ref_list_handler,
+            create_interior_ref_list_handler,
+            list_interior_ref_lists_handler,
+            get_merchandise_list_handler,
+            delete_merchandise_list_handler,
+            create_merchandise_list_handler,
+            list_merchandise_lists_handler,
         ))
         .recover(problem::unpack_problem)
         .with(warp::compression::gzip())
