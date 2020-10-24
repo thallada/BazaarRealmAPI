@@ -20,7 +20,7 @@ pub struct Caches {
     pub list_owners: Cache<ListParams, CachedResponse>,
     pub list_interior_ref_lists: Cache<ListParams, CachedResponse>,
     pub list_merchandise_lists: Cache<ListParams, CachedResponse>,
-    pub latest_interior_ref_list_by_shop_id: Cache<i32, CachedResponse>,
+    pub interior_ref_list_by_shop_id: Cache<i32, CachedResponse>,
 }
 
 impl Caches {
@@ -35,10 +35,7 @@ impl Caches {
             list_owners: Cache::new("list_owners", 100),
             list_interior_ref_lists: Cache::new("list_interior_ref_lists", 100),
             list_merchandise_lists: Cache::new("list_merchandise_lists", 100),
-            latest_interior_ref_list_by_shop_id: Cache::new(
-                "latest_interior_ref_list_by_shop_id",
-                100,
-            ),
+            interior_ref_list_by_shop_id: Cache::new("interior_ref_list_by_shop_id", 100),
         }
     }
 }

@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use http::StatusCode;
 use ipnetwork::IpNetwork;
+use sqlx::types::Json;
 use std::net::SocketAddr;
 use tracing::instrument;
 use uuid::Uuid;
@@ -79,6 +80,35 @@ pub async fn create_shop(
         .create(&env.db)
         .await
         .map_err(reject_anyhow)?;
+
+    // also save empty interior_ref_list and merchandise_list rows
+    if let Some(shop_id) = saved_shop.id {
+        let interior_ref_list = InteriorRefList {
+            id: None,
+            shop_id,
+            owner_id: Some(owner_id),
+            ref_list: Json::default(),
+            created_at: None,
+            updated_at: None,
+        };
+        interior_ref_list
+            .create(&env.db)
+            .await
+            .map_err(reject_anyhow)?;
+        let merchandise_list = MerchandiseList {
+            id: None,
+            shop_id,
+            owner_id: Some(owner_id),
+            form_list: Json::default(),
+            created_at: None,
+            updated_at: None,
+        };
+        merchandise_list
+            .create(&env.db)
+            .await
+            .map_err(reject_anyhow)?;
+    }
+
     let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
     let reply = json(&saved_shop);
     let reply = with_header(reply, "Location", url.as_str());
@@ -139,10 +169,7 @@ pub async fn delete_shop(
         .await
         .map_err(reject_anyhow)?;
     env.caches.list_shops.clear().await;
-    env.caches
-        .latest_interior_ref_list_by_shop_id
-        .delete(id)
-        .await;
+    env.caches.interior_ref_list_by_shop_id.delete(id).await;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -307,9 +334,52 @@ pub async fn create_interior_ref_list(
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches.list_interior_ref_lists.clear().await;
     env.caches
-        .latest_interior_ref_list_by_shop_id
+        .interior_ref_list_by_shop_id
         .delete(saved_interior_ref_list.shop_id)
         .await;
+    Ok(reply)
+}
+
+pub async fn update_interior_ref_list(
+    id: i32,
+    interior_ref_list: InteriorRefList,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let interior_ref_list_with_id_and_owner_id = if interior_ref_list.owner_id.is_some() {
+        InteriorRefList {
+            id: Some(id),
+            ..interior_ref_list
+        }
+    } else {
+        InteriorRefList {
+            id: Some(id),
+            owner_id: Some(owner_id),
+            ..interior_ref_list
+        }
+    };
+    let updated_interior_ref_list = interior_ref_list_with_id_and_owner_id
+        .update(&env.db, owner_id, id)
+        .await
+        .map_err(reject_anyhow)?;
+    let url = updated_interior_ref_list
+        .url(&env.api_url)
+        .map_err(reject_anyhow)?;
+    let reply = json(&updated_interior_ref_list);
+    let reply = with_header(reply, "Location", url.as_str());
+    let reply = with_status(reply, StatusCode::CREATED);
+    env.caches
+        .interior_ref_list
+        .delete_response(id)
+        .await
+        .map_err(reject_anyhow)?;
+    env.caches
+        .interior_ref_list_by_shop_id
+        .delete_response(updated_interior_ref_list.shop_id)
+        .await
+        .map_err(reject_anyhow)?;
+    env.caches.list_interior_ref_lists.clear().await;
     Ok(reply)
 }
 
@@ -332,21 +402,20 @@ pub async fn delete_interior_ref_list(
         .map_err(reject_anyhow)?;
     env.caches.list_interior_ref_lists.clear().await;
     env.caches
-        .latest_interior_ref_list_by_shop_id
+        .interior_ref_list_by_shop_id
         .delete(interior_ref_list.shop_id)
         .await;
     Ok(StatusCode::NO_CONTENT)
 }
 
-pub async fn get_latest_interior_ref_list_by_shop_id(
+pub async fn get_interior_ref_list_by_shop_id(
     shop_id: i32,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
     env.caches
-        .latest_interior_ref_list_by_shop_id
+        .interior_ref_list_by_shop_id
         .get_response(shop_id, || async {
-            let interior_ref_list =
-                InteriorRefList::get_latest_by_shop_id(&env.db, shop_id).await?;
+            let interior_ref_list = InteriorRefList::get_by_shop_id(&env.db, shop_id).await?;
             let reply = json(&interior_ref_list);
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
@@ -402,6 +471,44 @@ pub async fn create_merchandise_list(
     let reply = json(&saved_merchandise_list);
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
+    env.caches.list_merchandise_lists.clear().await;
+    Ok(reply)
+}
+
+pub async fn update_merchandise_list(
+    id: i32,
+    merchandise_list: MerchandiseList,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let merchandise_list_with_id_and_owner_id = if merchandise_list.owner_id.is_some() {
+        MerchandiseList {
+            id: Some(id),
+            ..merchandise_list
+        }
+    } else {
+        MerchandiseList {
+            id: Some(id),
+            owner_id: Some(owner_id),
+            ..merchandise_list
+        }
+    };
+    let updated_merchandise_list = merchandise_list_with_id_and_owner_id
+        .update(&env.db, owner_id, id)
+        .await
+        .map_err(reject_anyhow)?;
+    let url = updated_merchandise_list
+        .url(&env.api_url)
+        .map_err(reject_anyhow)?;
+    let reply = json(&updated_merchandise_list);
+    let reply = with_header(reply, "Location", url.as_str());
+    let reply = with_status(reply, StatusCode::CREATED);
+    env.caches
+        .merchandise_list
+        .delete_response(id)
+        .await
+        .map_err(reject_anyhow)?;
     env.caches.list_merchandise_lists.clear().await;
     Ok(reply)
 }

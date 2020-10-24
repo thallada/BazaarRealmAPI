@@ -71,6 +71,7 @@ where
 {
     warp::body::content_length_limit(1024 * 64).and(warp::body::json())
 }
+
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv().ok();
@@ -199,6 +200,15 @@ async fn main() -> Result<()> {
             .and(with_env(env.clone()))
             .and_then(handlers::delete_interior_ref_list),
     );
+    let update_interior_ref_list_handler = warp::path("interior_ref_lists").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::patch())
+            .and(json_body::<InteriorRefList>())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::update_interior_ref_list),
+    );
     let list_interior_ref_lists_handler = warp::path("interior_ref_lists").and(
         warp::path::end()
             .and(warp::get())
@@ -206,13 +216,13 @@ async fn main() -> Result<()> {
             .and(with_env(env.clone()))
             .and_then(handlers::list_interior_ref_lists),
     );
-    let get_latest_interior_ref_list_by_shop_id_handler = warp::path("shops").and(
+    let get_interior_ref_list_by_shop_id_handler = warp::path("shops").and(
         warp::path::param()
-            .and(warp::path("latest_interior_ref_list"))
+            .and(warp::path("interior_ref_list"))
             .and(warp::path::end())
             .and(warp::get())
             .and(with_env(env.clone()))
-            .and_then(handlers::get_latest_interior_ref_list_by_shop_id),
+            .and_then(handlers::get_interior_ref_list_by_shop_id),
     );
     let get_merchandise_list_handler = warp::path("merchandise_lists").and(
         warp::path::param()
@@ -237,6 +247,15 @@ async fn main() -> Result<()> {
             .and(with_env(env.clone()))
             .and_then(handlers::delete_merchandise_list),
     );
+    let update_merchandise_list_handler = warp::path("merchandise_lists").and(
+        warp::path::param()
+            .and(warp::path::end())
+            .and(warp::patch())
+            .and(json_body::<MerchandiseList>())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::update_merchandise_list),
+    );
     let list_merchandise_lists_handler = warp::path("merchandise_lists").and(
         warp::path::end()
             .and(warp::get())
@@ -258,15 +277,18 @@ async fn main() -> Result<()> {
             update_shop_handler,
             create_shop_handler,
             list_shops_handler,
-            get_latest_interior_ref_list_by_shop_id_handler,
+            get_interior_ref_list_by_shop_id_handler,
             get_interior_ref_list_handler,
             delete_interior_ref_list_handler,
+            update_interior_ref_list_handler,
             create_interior_ref_list_handler,
             list_interior_ref_lists_handler,
             get_merchandise_list_handler,
             delete_merchandise_list_handler,
+            update_merchandise_list_handler,
             create_merchandise_list_handler,
             list_merchandise_lists_handler,
+            // warp::any().map(|| StatusCode::NOT_FOUND),
         ))
         .recover(problem::unpack_problem)
         .with(warp::compression::gzip())

@@ -7,7 +7,7 @@ use sqlx::types::Json;
 use tracing::instrument;
 
 use super::ListParams;
-use super::Model;
+use super::{Model, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 // sqlx queries for this model need to be `query_as_unchecked!` because `query_as!` does not
@@ -115,5 +115,32 @@ impl Model for MerchandiseList {
             .await?
         };
         Ok(result)
+    }
+}
+
+#[async_trait]
+impl UpdateableModel for MerchandiseList {
+    #[instrument(level = "debug", skip(self, db))]
+    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+        let merchandise_list =
+            sqlx::query!("SELECT owner_id FROM merchandise_lists WHERE id = $1", id)
+                .fetch_one(db)
+                .await?;
+        if merchandise_list.owner_id == owner_id {
+            Ok(sqlx::query_as_unchecked!(
+                Self,
+                "UPDATE merchandise_lists SET
+                form_list = $2,
+                updated_at = now()
+                WHERE id = $1
+                RETURNING *",
+                id,
+                self.form_list,
+            )
+            .fetch_one(db)
+            .await?)
+        } else {
+            return Err(forbidden_permission());
+        }
     }
 }

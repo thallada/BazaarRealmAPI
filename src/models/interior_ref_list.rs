@@ -7,7 +7,7 @@ use sqlx::types::Json;
 use tracing::instrument;
 
 use super::ListParams;
-use super::Model;
+use super::{Model, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 // sqlx queries for this model need to be `query_as_unchecked!` because `query_as!` does not
@@ -126,15 +126,41 @@ impl Model for InteriorRefList {
     }
 }
 
+#[async_trait]
+impl UpdateableModel for InteriorRefList {
+    #[instrument(level = "debug", skip(self, db))]
+    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+        let interior_ref_list =
+            sqlx::query!("SELECT owner_id FROM interior_ref_lists WHERE id = $1", id)
+                .fetch_one(db)
+                .await?;
+        if interior_ref_list.owner_id == owner_id {
+            Ok(sqlx::query_as_unchecked!(
+                Self,
+                "UPDATE interior_ref_lists SET
+                ref_list = $2,
+                updated_at = now()
+                WHERE id = $1
+                RETURNING *",
+                id,
+                self.ref_list,
+            )
+            .fetch_one(db)
+            .await?)
+        } else {
+            return Err(forbidden_permission());
+        }
+    }
+}
+
 impl InteriorRefList {
     #[instrument(level = "debug", skip(db))]
-    pub async fn get_latest_by_shop_id(db: &PgPool, shop_id: i32) -> Result<Self> {
+    pub async fn get_by_shop_id(db: &PgPool, shop_id: i32) -> Result<Self> {
         sqlx::query_as_unchecked!(
             Self,
             "SELECT interior_ref_lists.* FROM interior_ref_lists
             INNER JOIN shops ON (interior_ref_lists.shop_id = shops.id)
             WHERE shops.id = $1
-            ORDER BY interior_ref_lists.created_at DESC
             LIMIT 1",
             shop_id,
         )
