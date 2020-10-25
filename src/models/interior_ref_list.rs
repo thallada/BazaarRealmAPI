@@ -50,6 +50,7 @@ impl Model for InteriorRefList {
         self.id
     }
 
+    // TODO: this model will probably never need to be accessed through it's ID, should these methods be removed/unimplemented?
     #[instrument(level = "debug", skip(db))]
     async fn get(db: &PgPool, id: i32) -> Result<Self> {
         sqlx::query_as_unchecked!(Self, "SELECT * FROM interior_ref_lists WHERE id = $1", id)
@@ -158,14 +159,38 @@ impl InteriorRefList {
     pub async fn get_by_shop_id(db: &PgPool, shop_id: i32) -> Result<Self> {
         sqlx::query_as_unchecked!(
             Self,
-            "SELECT interior_ref_lists.* FROM interior_ref_lists
-            INNER JOIN shops ON (interior_ref_lists.shop_id = shops.id)
-            WHERE shops.id = $1
-            LIMIT 1",
+            "SELECT * FROM interior_ref_lists
+            WHERE shop_id = $1",
             shop_id,
         )
         .fetch_one(db)
         .await
         .map_err(Error::new)
+    }
+
+    #[instrument(level = "debug", skip(self, db))]
+    pub async fn update_by_shop_id(self, db: &PgPool, owner_id: i32, shop_id: i32) -> Result<Self> {
+        let interior_ref_list = sqlx::query!(
+            "SELECT owner_id FROM interior_ref_lists WHERE shop_id = $1",
+            shop_id
+        )
+        .fetch_one(db)
+        .await?;
+        if interior_ref_list.owner_id == owner_id {
+            Ok(sqlx::query_as_unchecked!(
+                Self,
+                "UPDATE interior_ref_lists SET
+                ref_list = $2,
+                updated_at = now()
+                WHERE shop_id = $1
+                RETURNING *",
+                shop_id,
+                self.ref_list,
+            )
+            .fetch_one(db)
+            .await?)
+        } else {
+            return Err(forbidden_permission());
+        }
     }
 }

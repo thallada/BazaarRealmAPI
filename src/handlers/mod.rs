@@ -145,11 +145,7 @@ pub async fn update_shop(
     let reply = json(&updated_shop);
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches
-        .shop
-        .delete_response(id)
-        .await
-        .map_err(reject_anyhow)?;
+    env.caches.shop.delete_response(id).await;
     env.caches.list_shops.clear().await;
     Ok(reply)
 }
@@ -163,13 +159,16 @@ pub async fn delete_shop(
     Shop::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
-    env.caches
-        .shop
-        .delete_response(id)
-        .await
-        .map_err(reject_anyhow)?;
+    env.caches.shop.delete_response(id).await;
     env.caches.list_shops.clear().await;
-    env.caches.interior_ref_list_by_shop_id.delete(id).await;
+    env.caches
+        .interior_ref_list_by_shop_id
+        .delete_response(id)
+        .await;
+    env.caches
+        .merchandise_list_by_shop_id
+        .delete_response(id)
+        .await;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -254,11 +253,7 @@ pub async fn update_owner(
     let reply = json(&updated_owner);
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches
-        .owner
-        .delete_response(id)
-        .await
-        .map_err(reject_anyhow)?;
+    env.caches.owner.delete_response(id).await;
     env.caches.list_owners.clear().await;
     Ok(reply)
 }
@@ -272,11 +267,7 @@ pub async fn delete_owner(
     Owner::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
-    env.caches
-        .owner
-        .delete_response(id)
-        .await
-        .map_err(reject_anyhow)?;
+    env.caches.owner.delete_response(id).await;
     env.caches
         .owner_ids_by_api_key
         .delete(api_key.expect("api-key has been validated during authenticate"))
@@ -335,7 +326,7 @@ pub async fn create_interior_ref_list(
     env.caches.list_interior_ref_lists.clear().await;
     env.caches
         .interior_ref_list_by_shop_id
-        .delete(saved_interior_ref_list.shop_id)
+        .delete_response(saved_interior_ref_list.shop_id)
         .await;
     Ok(reply)
 }
@@ -369,16 +360,48 @@ pub async fn update_interior_ref_list(
     let reply = json(&updated_interior_ref_list);
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches
-        .interior_ref_list
-        .delete_response(id)
-        .await
-        .map_err(reject_anyhow)?;
+    env.caches.interior_ref_list.delete_response(id).await;
     env.caches
         .interior_ref_list_by_shop_id
         .delete_response(updated_interior_ref_list.shop_id)
+        .await;
+    env.caches.list_interior_ref_lists.clear().await;
+    Ok(reply)
+}
+
+pub async fn update_interior_ref_list_by_shop_id(
+    shop_id: i32,
+    interior_ref_list: InteriorRefList,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let interior_ref_list_with_owner_id = InteriorRefList {
+        owner_id: Some(owner_id),
+        ..interior_ref_list
+    };
+    let updated_interior_ref_list = interior_ref_list_with_owner_id
+        .update_by_shop_id(&env.db, owner_id, shop_id)
         .await
         .map_err(reject_anyhow)?;
+    let url = updated_interior_ref_list
+        .url(&env.api_url)
+        .map_err(reject_anyhow)?;
+    let reply = json(&updated_interior_ref_list);
+    let reply = with_header(reply, "Location", url.as_str());
+    let reply = with_status(reply, StatusCode::CREATED);
+    env.caches
+        .interior_ref_list
+        .delete_response(
+            updated_interior_ref_list
+                .id
+                .expect("saved interior_ref_list has no id"),
+        )
+        .await;
+    env.caches
+        .interior_ref_list_by_shop_id
+        .delete_response(updated_interior_ref_list.shop_id)
+        .await;
     env.caches.list_interior_ref_lists.clear().await;
     Ok(reply)
 }
@@ -395,15 +418,11 @@ pub async fn delete_interior_ref_list(
     InteriorRefList::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
-    env.caches
-        .interior_ref_list
-        .delete_response(id)
-        .await
-        .map_err(reject_anyhow)?;
+    env.caches.interior_ref_list.delete_response(id).await;
     env.caches.list_interior_ref_lists.clear().await;
     env.caches
         .interior_ref_list_by_shop_id
-        .delete(interior_ref_list.shop_id)
+        .delete_response(interior_ref_list.shop_id)
         .await;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -472,6 +491,10 @@ pub async fn create_merchandise_list(
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches.list_merchandise_lists.clear().await;
+    env.caches
+        .merchandise_list_by_shop_id
+        .delete_response(saved_merchandise_list.shop_id)
+        .await;
     Ok(reply)
 }
 
@@ -504,11 +527,48 @@ pub async fn update_merchandise_list(
     let reply = json(&updated_merchandise_list);
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
+    env.caches.merchandise_list.delete_response(id).await;
     env.caches
-        .merchandise_list
-        .delete_response(id)
+        .merchandise_list_by_shop_id
+        .delete_response(updated_merchandise_list.shop_id)
+        .await;
+    env.caches.list_merchandise_lists.clear().await;
+    Ok(reply)
+}
+
+pub async fn update_merchandise_list_by_shop_id(
+    shop_id: i32,
+    merchandise_list: MerchandiseList,
+    api_key: Option<Uuid>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let merchandise_list_with_owner_id = MerchandiseList {
+        owner_id: Some(owner_id),
+        ..merchandise_list
+    };
+    let updated_merchandise_list = merchandise_list_with_owner_id
+        .update_by_shop_id(&env.db, owner_id, shop_id)
         .await
         .map_err(reject_anyhow)?;
+    let url = updated_merchandise_list
+        .url(&env.api_url)
+        .map_err(reject_anyhow)?;
+    let reply = json(&updated_merchandise_list);
+    let reply = with_header(reply, "Location", url.as_str());
+    let reply = with_status(reply, StatusCode::CREATED);
+    env.caches
+        .merchandise_list
+        .delete_response(
+            updated_merchandise_list
+                .id
+                .expect("saved merchandise_list has no id"),
+        )
+        .await;
+    env.caches
+        .merchandise_list_by_shop_id
+        .delete_response(updated_merchandise_list.shop_id)
+        .await;
     env.caches.list_merchandise_lists.clear().await;
     Ok(reply)
 }
@@ -519,14 +579,32 @@ pub async fn delete_merchandise_list(
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
+    let merchandise_list = MerchandiseList::get(&env.db, id)
+        .await
+        .map_err(reject_anyhow)?;
     MerchandiseList::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
+    env.caches.merchandise_list.delete_response(id).await;
     env.caches
-        .merchandise_list
-        .delete_response(id)
-        .await
-        .map_err(reject_anyhow)?;
+        .merchandise_list_by_shop_id
+        .delete_response(merchandise_list.shop_id)
+        .await;
     env.caches.list_merchandise_lists.clear().await;
     Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn get_merchandise_list_by_shop_id(
+    shop_id: i32,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    env.caches
+        .merchandise_list_by_shop_id
+        .get_response(shop_id, || async {
+            let merchandise_list = MerchandiseList::get_by_shop_id(&env.db, shop_id).await?;
+            let reply = json(&merchandise_list);
+            let reply = with_status(reply, StatusCode::OK);
+            Ok(reply)
+        })
+        .await
 }

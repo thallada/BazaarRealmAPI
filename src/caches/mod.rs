@@ -21,6 +21,7 @@ pub struct Caches {
     pub list_interior_ref_lists: Cache<ListParams, CachedResponse>,
     pub list_merchandise_lists: Cache<ListParams, CachedResponse>,
     pub interior_ref_list_by_shop_id: Cache<i32, CachedResponse>,
+    pub merchandise_list_by_shop_id: Cache<i32, CachedResponse>,
 }
 
 impl Caches {
@@ -36,6 +37,7 @@ impl Caches {
             list_interior_ref_lists: Cache::new("list_interior_ref_lists", 100),
             list_merchandise_lists: Cache::new("list_merchandise_lists", 100),
             interior_ref_list_by_shop_id: Cache::new("interior_ref_list_by_shop_id", 100),
+            merchandise_list_by_shop_id: Cache::new("merchandise_list_by_shop_id", 100),
         }
     }
 }

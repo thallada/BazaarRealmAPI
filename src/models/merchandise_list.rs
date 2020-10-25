@@ -46,6 +46,7 @@ impl Model for MerchandiseList {
         self.id
     }
 
+    // TODO: this model will probably never need to be accessed through it's ID, should these methods be removed/unimplemented?
     #[instrument(level = "debug", skip(db))]
     async fn get(db: &PgPool, id: i32) -> Result<Self> {
         sqlx::query_as_unchecked!(Self, "SELECT * FROM merchandise_lists WHERE id = $1", id)
@@ -135,6 +136,47 @@ impl UpdateableModel for MerchandiseList {
                 WHERE id = $1
                 RETURNING *",
                 id,
+                self.form_list,
+            )
+            .fetch_one(db)
+            .await?)
+        } else {
+            return Err(forbidden_permission());
+        }
+    }
+}
+
+impl MerchandiseList {
+    #[instrument(level = "debug", skip(db))]
+    pub async fn get_by_shop_id(db: &PgPool, shop_id: i32) -> Result<Self> {
+        sqlx::query_as_unchecked!(
+            Self,
+            "SELECT * FROM merchandise_lists
+            WHERE shop_id = $1",
+            shop_id,
+        )
+        .fetch_one(db)
+        .await
+        .map_err(Error::new)
+    }
+
+    #[instrument(level = "debug", skip(db))]
+    pub async fn update_by_shop_id(self, db: &PgPool, owner_id: i32, shop_id: i32) -> Result<Self> {
+        let merchandise_list = sqlx::query!(
+            "SELECT owner_id FROM merchandise_lists WHERE shop_id = $1",
+            shop_id
+        )
+        .fetch_one(db)
+        .await?;
+        if merchandise_list.owner_id == owner_id {
+            Ok(sqlx::query_as_unchecked!(
+                Self,
+                "UPDATE merchandise_lists SET
+                form_list = $2,
+                updated_at = now()
+                WHERE shop_id = $1
+                RETURNING *",
+                shop_id,
                 self.form_list,
             )
             .fetch_one(db)

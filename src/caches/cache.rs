@@ -123,11 +123,11 @@ where
         Ok(cached_response)
     }
 
-    pub async fn delete_response(&self, key: K) -> Result<Option<CachedResponse>> {
+    pub async fn delete_response(&self, key: K) -> Option<CachedResponse> {
         let mut guard = self.lru_mutex.lock().await;
         let cached_response = guard.pop(&key);
         self.log_with_key(&key, "delete_response");
 
-        Ok(cached_response)
+        cached_response
     }
 }
