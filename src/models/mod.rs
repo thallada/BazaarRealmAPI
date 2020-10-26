@@ -9,10 +9,10 @@ pub mod owner;
 pub mod shop;
 
 pub use interior_ref_list::InteriorRefList;
+pub use merchandise_list::{MerchandiseList, MerchandiseParams};
 pub use model::{Model, UpdateableModel};
 pub use owner::Owner;
 pub use shop::Shop;
-pub use merchandise_list::MerchandiseList;
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
 pub enum Order {

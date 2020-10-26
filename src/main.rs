@@ -23,7 +23,7 @@ mod problem;
 
 use caches::Caches;
 use models::interior_ref_list::InteriorRefList;
-use models::merchandise_list::MerchandiseList;
+use models::merchandise_list::{MerchandiseList, MerchandiseParams};
 use models::owner::Owner;
 use models::shop::Shop;
 use models::ListParams;
@@ -292,6 +292,16 @@ async fn main() -> Result<()> {
             .and(with_env(env.clone()))
             .and_then(handlers::get_merchandise_list_by_shop_id),
     );
+    let buy_merchandise_handler = warp::path("shops").and(
+        warp::path::param()
+            .and(warp::path("merchandise_list"))
+            .and(warp::path::end())
+            .and(warp::post())
+            .and(warp::query::<MerchandiseParams>())
+            .and(warp::header::optional("api-key"))
+            .and(with_env(env.clone()))
+            .and_then(handlers::buy_merchandise),
+    );
 
     let routes = warp::path("v1")
         .and(balanced_or_tree!(
@@ -310,6 +320,7 @@ async fn main() -> Result<()> {
             get_merchandise_list_by_shop_id_handler,
             update_interior_ref_list_by_shop_id_handler,
             update_merchandise_list_by_shop_id_handler,
+            buy_merchandise_handler,
             get_interior_ref_list_handler,
             delete_interior_ref_list_handler,
             update_interior_ref_list_handler,

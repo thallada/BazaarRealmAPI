@@ -2,6 +2,7 @@ use anyhow::{Error, Result};
 use async_trait::async_trait;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use sqlx::postgres::PgPool;
 use sqlx::types::Json;
 use tracing::instrument;
@@ -34,6 +35,13 @@ pub struct MerchandiseList {
     pub form_list: Json<Vec<Merchandise>>,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
+}
+
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
+pub struct MerchandiseParams {
+    pub mod_name: String,
+    pub local_form_id: i32,
+    pub quantity_delta: i32,
 }
 
 #[async_trait]
@@ -184,5 +192,49 @@ impl MerchandiseList {
         } else {
             return Err(forbidden_permission());
         }
+    }
+
+    #[instrument(level = "debug", skip(db))]
+    pub async fn update_merchandise_quantity(
+        db: &PgPool,
+        shop_id: i32,
+        mod_name: &str,
+        local_form_id: i32,
+        quantity_delta: i32,
+    ) -> Result<Self> {
+        Ok(sqlx::query_as_unchecked!(
+            Self,
+            "UPDATE
+                merchandise_lists
+            SET
+                form_list =
+                    jsonb_set(
+                        form_list,
+                        array[elem_index::text, 'quantity'],
+                        to_jsonb(quantity::int + $4),
+                        true
+                    )
+            FROM (
+                SELECT
+                    pos - 1 as elem_index,
+                    elem->>'quantity' as quantity
+                FROM
+                    merchandise_lists,
+                    jsonb_array_elements(form_list) with ordinality arr(elem, pos)
+                WHERE
+                    shop_id = $1 AND
+                    elem->>'mod_name' = $2::text AND
+                    elem->>'local_form_id' = $3::text
+            ) sub
+            WHERE
+                shop_id = $1
+            RETURNING merchandise_lists.*",
+            shop_id,
+            mod_name,
+            local_form_id,
+            quantity_delta,
+        )
+        .fetch_one(db)
+        .await?)
     }
 }
