@@ -37,43 +37,41 @@ pub fn from_anyhow(error: anyhow::Error) -> HttpApiProblem {
                 return HttpApiProblem::with_title_and_type_from_status(StatusCode::NOT_FOUND)
             }
             sqlx::error::Error::Database(db_error) => {
+                let pg_error = db_error.downcast_ref::<sqlx::postgres::PgDatabaseError>();
                 error!(
                     "Database error: {}. {}",
-                    db_error.message(),
-                    db_error.details().unwrap_or("")
+                    pg_error.message(),
+                    pg_error.detail().unwrap_or("")
                 );
-                dbg!(&db_error);
-                if let Some(code) = db_error.code() {
-                    dbg!(&code);
-                    if let Some(constraint) = db_error.constraint_name() {
-                        dbg!(&constraint);
-                        if code == "23503" && constraint == "shops_owner_id_fkey" {
-                            // foreign_key_violation
-                            return HttpApiProblem::with_title_and_type_from_status(
-                                StatusCode::BAD_REQUEST,
-                            )
-                            .set_detail("Owner does not exist");
-                        } else if code == "23505" && constraint == "owners_api_key_key" {
-                            // unique_violation
-                            return HttpApiProblem::with_title_and_type_from_status(
-                                StatusCode::BAD_REQUEST,
-                            )
-                            .set_detail("Owner with Api-Key already exists");
-                        } else if code == "23505" && constraint == "owners_unique_name_and_api_key"
-                        {
-                            // unique_violation
-                            return HttpApiProblem::with_title_and_type_from_status(
-                                StatusCode::BAD_REQUEST,
-                            )
-                            .set_detail("Duplicate owner with same name and Api-Key exists");
-                        } else if code == "23505" && constraint == "shops_unique_name_and_owner_id"
-                        {
-                            // unique_violation
-                            return HttpApiProblem::with_title_and_type_from_status(
-                                StatusCode::BAD_REQUEST,
-                            )
-                            .set_detail("Owner already has a shop with that name");
-                        }
+                dbg!(&pg_error);
+                let code = pg_error.code();
+                dbg!(&code);
+                if let Some(constraint) = pg_error.constraint() {
+                    dbg!(&constraint);
+                    if code == "23503" && constraint == "shops_owner_id_fkey" {
+                        // foreign_key_violation
+                        return HttpApiProblem::with_title_and_type_from_status(
+                            StatusCode::BAD_REQUEST,
+                        )
+                        .set_detail("Owner does not exist");
+                    } else if code == "23505" && constraint == "owners_api_key_key" {
+                        // unique_violation
+                        return HttpApiProblem::with_title_and_type_from_status(
+                            StatusCode::BAD_REQUEST,
+                        )
+                        .set_detail("Owner with Api-Key already exists");
+                    } else if code == "23505" && constraint == "owners_unique_name_and_api_key" {
+                        // unique_violation
+                        return HttpApiProblem::with_title_and_type_from_status(
+                            StatusCode::BAD_REQUEST,
+                        )
+                        .set_detail("Duplicate owner with same name and Api-Key exists");
+                    } else if code == "23505" && constraint == "shops_unique_name_and_owner_id" {
+                        // unique_violation
+                        return HttpApiProblem::with_title_and_type_from_status(
+                            StatusCode::BAD_REQUEST,
+                        )
+                        .set_detail("Owner already has a shop with that name");
                     }
                 }
             }

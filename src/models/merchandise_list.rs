@@ -8,7 +8,7 @@ use sqlx::types::Json;
 use tracing::instrument;
 
 use super::ListParams;
-use super::{Model, UpdateableModel};
+use super::{Model, PostedModel, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 // sqlx queries for this model need to be `query_as_unchecked!` because `query_as!` does not
@@ -29,13 +29,22 @@ pub struct Merchandise {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MerchandiseList {
-    pub id: Option<i32>,
+    pub id: i32,
+    pub shop_id: i32,
+    pub owner_id: i32,
+    pub form_list: Json<Vec<Merchandise>>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PostedMerchandiseList {
     pub shop_id: i32,
     pub owner_id: Option<i32>,
     pub form_list: Json<Vec<Merchandise>>,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
 }
+
+impl PostedModel for PostedMerchandiseList {}
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
 pub struct MerchandiseParams {
@@ -50,7 +59,7 @@ impl Model for MerchandiseList {
         "merchandise_list"
     }
 
-    fn pk(&self) -> Option<i32> {
+    fn pk(&self) -> i32 {
         self.id
     }
 
@@ -63,17 +72,17 @@ impl Model for MerchandiseList {
             .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    async fn create(self, db: &PgPool) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    async fn create(posted: PostedMerchandiseList, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as_unchecked!(
             Self,
             "INSERT INTO merchandise_lists
             (shop_id, owner_id, form_list, created_at, updated_at)
             VALUES ($1, $2, $3, now(), now())
             RETURNING *",
-            self.shop_id,
-            self.owner_id,
-            self.form_list,
+            posted.shop_id,
+            posted.owner_id,
+            posted.form_list,
         )
         .fetch_one(db)
         .await?)
@@ -129,8 +138,13 @@ impl Model for MerchandiseList {
 
 #[async_trait]
 impl UpdateableModel for MerchandiseList {
-    #[instrument(level = "debug", skip(self, db))]
-    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    async fn update(
+        posted: PostedMerchandiseList,
+        db: &PgPool,
+        owner_id: i32,
+        id: i32,
+    ) -> Result<Self> {
         let merchandise_list =
             sqlx::query!("SELECT owner_id FROM merchandise_lists WHERE id = $1", id)
                 .fetch_one(db)
@@ -144,7 +158,7 @@ impl UpdateableModel for MerchandiseList {
                 WHERE id = $1
                 RETURNING *",
                 id,
-                self.form_list,
+                posted.form_list,
             )
             .fetch_one(db)
             .await?)
@@ -168,8 +182,13 @@ impl MerchandiseList {
         .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(db))]
-    pub async fn update_by_shop_id(self, db: &PgPool, owner_id: i32, shop_id: i32) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    pub async fn update_by_shop_id(
+        posted: PostedMerchandiseList,
+        db: &PgPool,
+        owner_id: i32,
+        shop_id: i32,
+    ) -> Result<Self> {
         let merchandise_list = sqlx::query!(
             "SELECT owner_id FROM merchandise_lists WHERE shop_id = $1",
             shop_id
@@ -185,7 +204,7 @@ impl MerchandiseList {
                 WHERE shop_id = $1
                 RETURNING *",
                 shop_id,
-                self.form_list,
+                posted.form_list,
             )
             .fetch_one(db)
             .await?)

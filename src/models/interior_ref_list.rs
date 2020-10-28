@@ -7,7 +7,7 @@ use sqlx::types::Json;
 use tracing::instrument;
 
 use super::ListParams;
-use super::{Model, UpdateableModel};
+use super::{Model, PostedModel, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 // sqlx queries for this model need to be `query_as_unchecked!` because `query_as!` does not
@@ -32,13 +32,22 @@ pub struct InteriorRef {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct InteriorRefList {
-    pub id: Option<i32>,
+    pub id: i32,
+    pub shop_id: i32,
+    pub owner_id: i32,
+    pub ref_list: Json<Vec<InteriorRef>>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PostedInteriorRefList {
     pub shop_id: i32,
     pub owner_id: Option<i32>,
     pub ref_list: Json<Vec<InteriorRef>>,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
 }
+
+impl PostedModel for PostedInteriorRefList {}
 
 #[async_trait]
 impl Model for InteriorRefList {
@@ -46,7 +55,7 @@ impl Model for InteriorRefList {
         "interior_ref_list"
     }
 
-    fn pk(&self) -> Option<i32> {
+    fn pk(&self) -> i32 {
         self.id
     }
 
@@ -59,8 +68,8 @@ impl Model for InteriorRefList {
             .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    async fn create(self, db: &PgPool) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    async fn create(posted: PostedInteriorRefList, db: &PgPool) -> Result<Self> {
         // TODO:
         // * Decide if I'll need to make the same changes to merchandise and transactions
         //      - answer depends on how many rows of each I expect to insert in one go
@@ -71,9 +80,9 @@ impl Model for InteriorRefList {
             (shop_id, owner_id, ref_list, created_at, updated_at)
             VALUES ($1, $2, $3, now(), now())
             RETURNING *",
-            self.shop_id,
-            self.owner_id,
-            self.ref_list,
+            posted.shop_id,
+            posted.owner_id,
+            posted.ref_list,
         )
         .fetch_one(db)
         .await?)
@@ -129,8 +138,13 @@ impl Model for InteriorRefList {
 
 #[async_trait]
 impl UpdateableModel for InteriorRefList {
-    #[instrument(level = "debug", skip(self, db))]
-    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    async fn update(
+        posted: PostedInteriorRefList,
+        db: &PgPool,
+        owner_id: i32,
+        id: i32,
+    ) -> Result<Self> {
         let interior_ref_list =
             sqlx::query!("SELECT owner_id FROM interior_ref_lists WHERE id = $1", id)
                 .fetch_one(db)
@@ -144,7 +158,7 @@ impl UpdateableModel for InteriorRefList {
                 WHERE id = $1
                 RETURNING *",
                 id,
-                self.ref_list,
+                posted.ref_list,
             )
             .fetch_one(db)
             .await?)
@@ -168,8 +182,13 @@ impl InteriorRefList {
         .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    pub async fn update_by_shop_id(self, db: &PgPool, owner_id: i32, shop_id: i32) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    pub async fn update_by_shop_id(
+        posted: PostedInteriorRefList,
+        db: &PgPool,
+        owner_id: i32,
+        shop_id: i32,
+    ) -> Result<Self> {
         let interior_ref_list = sqlx::query!(
             "SELECT owner_id FROM interior_ref_lists WHERE shop_id = $1",
             shop_id
@@ -185,7 +204,7 @@ impl InteriorRefList {
                 WHERE shop_id = $1
                 RETURNING *",
                 shop_id,
-                self.ref_list,
+                posted.ref_list,
             )
             .fetch_one(db)
             .await?)

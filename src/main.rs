@@ -22,10 +22,10 @@ mod models;
 mod problem;
 
 use caches::Caches;
-use models::interior_ref_list::InteriorRefList;
-use models::merchandise_list::{MerchandiseList, MerchandiseParams};
-use models::owner::Owner;
-use models::shop::Shop;
+use models::interior_ref_list::PostedInteriorRefList;
+use models::merchandise_list::{MerchandiseParams, PostedMerchandiseList};
+use models::owner::PostedOwner;
+use models::shop::PostedShop;
 use models::ListParams;
 
 #[derive(Clap)]
@@ -45,10 +45,7 @@ pub struct Environment {
 impl Environment {
     async fn new(api_url: Url) -> Result<Environment> {
         Ok(Environment {
-            db: PgPool::builder()
-                .max_size(5)
-                .build(&env::var("DATABASE_URL")?)
-                .await?,
+            db: PgPool::connect(&env::var("DATABASE_URL")?).await?,
             caches: Caches::initialize(),
             api_url,
         })
@@ -108,7 +105,7 @@ async fn main() -> Result<()> {
     let create_owner_handler = warp::path("owners").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<Owner>())
+            .and(json_body::<PostedOwner>())
             .and(warp::addr::remote())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("x-real-ip"))
@@ -127,7 +124,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<Owner>())
+            .and(json_body::<PostedOwner>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::update_owner),
@@ -149,7 +146,7 @@ async fn main() -> Result<()> {
     let create_shop_handler = warp::path("shops").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<Shop>())
+            .and(json_body::<PostedShop>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::create_shop),
@@ -166,7 +163,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<Shop>())
+            .and(json_body::<PostedShop>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::update_shop),
@@ -188,7 +185,7 @@ async fn main() -> Result<()> {
     let create_interior_ref_list_handler = warp::path("interior_ref_lists").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<InteriorRefList>())
+            .and(json_body::<PostedInteriorRefList>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::create_interior_ref_list),
@@ -205,7 +202,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<InteriorRefList>())
+            .and(json_body::<PostedInteriorRefList>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::update_interior_ref_list),
@@ -215,7 +212,7 @@ async fn main() -> Result<()> {
             .and(warp::path("interior_ref_list"))
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<InteriorRefList>())
+            .and(json_body::<PostedInteriorRefList>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::update_interior_ref_list_by_shop_id),
@@ -245,7 +242,7 @@ async fn main() -> Result<()> {
     let create_merchandise_list_handler = warp::path("merchandise_lists").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<MerchandiseList>())
+            .and(json_body::<PostedMerchandiseList>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::create_merchandise_list),
@@ -262,7 +259,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<MerchandiseList>())
+            .and(json_body::<PostedMerchandiseList>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::update_merchandise_list),
@@ -272,7 +269,7 @@ async fn main() -> Result<()> {
             .and(warp::path("merchandise_list"))
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<MerchandiseList>())
+            .and(json_body::<PostedMerchandiseList>())
             .and(warp::header::optional("api-key"))
             .and(with_env(env.clone()))
             .and_then(handlers::update_merchandise_list_by_shop_id),

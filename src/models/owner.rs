@@ -8,21 +8,35 @@ use tracing::instrument;
 use uuid::Uuid;
 
 use super::ListParams;
-use super::{Model, UpdateableModel};
+use super::{Model, PostedModel, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Owner {
-    pub id: Option<i32>,
+    pub id: i32,
+    pub name: String,
+    #[serde(skip_serializing)]
+    pub api_key: Uuid,
+    #[serde(skip_serializing)]
+    pub ip_address: Option<IpNetwork>,
+    pub mod_version: i32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PostedOwner {
     pub name: String,
     #[serde(skip_serializing)]
     pub api_key: Option<Uuid>,
     #[serde(skip_serializing)]
     pub ip_address: Option<IpNetwork>,
     pub mod_version: i32,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
+
+impl PostedModel for PostedOwner {}
 
 #[async_trait]
 impl Model for Owner {
@@ -30,7 +44,7 @@ impl Model for Owner {
         "owner"
     }
 
-    fn pk(&self) -> Option<i32> {
+    fn pk(&self) -> i32 {
         self.id
     }
 
@@ -42,18 +56,18 @@ impl Model for Owner {
             .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    async fn create(self, db: &PgPool) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    async fn create(posted: PostedOwner, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
             "INSERT INTO owners
                 (name, api_key, ip_address, mod_version, created_at, updated_at)
                 VALUES ($1, $2, $3, $4, now(), now())
                 RETURNING *",
-            self.name,
-            self.api_key,
-            self.ip_address,
-            self.mod_version,
+            posted.name,
+            posted.api_key,
+            posted.ip_address,
+            posted.mod_version,
         )
         .fetch_one(db)
         .await?)
@@ -106,8 +120,8 @@ impl Model for Owner {
 
 #[async_trait]
 impl UpdateableModel for Owner {
-    #[instrument(level = "debug", skip(self, db))]
-    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    async fn update(posted: PostedOwner, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
         let owner = sqlx::query!("SELECT id FROM owners WHERE id = $1", id)
             .fetch_one(db)
             .await?;
@@ -121,8 +135,8 @@ impl UpdateableModel for Owner {
                 WHERE id = $1
                 RETURNING *",
                 id,
-                self.name,
-                self.mod_version,
+                posted.name,
+                posted.mod_version,
             )
             .fetch_one(db)
             .await?)

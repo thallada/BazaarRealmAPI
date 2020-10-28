@@ -6,23 +6,32 @@ use sqlx::postgres::PgPool;
 use tracing::instrument;
 
 use super::ListParams;
-use super::{Model, UpdateableModel};
+use super::{Model, PostedModel, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Shop {
-    pub id: Option<i32>,
+    pub id: i32,
     pub name: String,
-    pub owner_id: Option<i32>,
-    pub description: String,
+    pub owner_id: i32,
+    pub description: Option<String>,
     // removing these until I figure out the plan for buying and selling
     // pub is_not_sell_buy: bool,
     // pub sell_buy_list_id: i32,
     // pub vendor_id: i32,
     // pub vendor_gold: i32,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PostedShop {
+    pub name: String,
+    pub owner_id: Option<i32>,
+    pub description: Option<String>,
+}
+
+impl PostedModel for PostedShop {}
 
 #[async_trait]
 impl Model for Shop {
@@ -30,7 +39,7 @@ impl Model for Shop {
         "shop"
     }
 
-    fn pk(&self) -> Option<i32> {
+    fn pk(&self) -> i32 {
         self.id
     }
 
@@ -42,17 +51,17 @@ impl Model for Shop {
             .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    async fn create(self, db: &PgPool) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    async fn create(posted: PostedShop, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
             "INSERT INTO shops
             (name, owner_id, description, created_at, updated_at)
             VALUES ($1, $2, $3, now(), now())
             RETURNING *",
-            self.name,
-            self.owner_id,
-            self.description,
+            posted.name,
+            posted.owner_id,
+            posted.description,
         )
         .fetch_one(db)
         .await?)
@@ -105,8 +114,8 @@ impl Model for Shop {
 
 #[async_trait]
 impl UpdateableModel for Shop {
-    #[instrument(level = "debug", skip(self, db))]
-    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+    #[instrument(level = "debug", skip(posted, db))]
+    async fn update(posted: PostedShop, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
         let shop = sqlx::query!("SELECT owner_id FROM shops WHERE id = $1", id)
             .fetch_one(db)
             .await?;
@@ -121,9 +130,9 @@ impl UpdateableModel for Shop {
                 WHERE id = $1
                 RETURNING *",
                 id,
-                self.name,
-                self.owner_id,
-                self.description,
+                posted.name,
+                posted.owner_id,
+                posted.description,
             )
             .fetch_one(db)
             .await?)
