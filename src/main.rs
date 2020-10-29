@@ -7,7 +7,6 @@ use serde::{de::DeserializeOwned, Serialize};
 use sqlx::postgres::PgPool;
 use std::convert::Infallible;
 use std::env;
-use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 use url::Url;
 use warp::Filter;
@@ -278,7 +277,7 @@ async fn main() -> Result<()> {
     );
     let buy_merchandise_handler = warp::path("shops").and(
         warp::path::param()
-            .and(warp::path("merchandise_list"))
+            .and(warp::path("buy_merchandise"))
             .and(warp::path::end())
             .and(warp::post())
             .and(warp::query::<MerchandiseParams>())

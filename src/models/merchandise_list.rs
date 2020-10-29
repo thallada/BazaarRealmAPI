@@ -2,7 +2,6 @@ use anyhow::{Error, Result};
 use async_trait::async_trait;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use sqlx::postgres::PgPool;
 use sqlx::types::Json;
 use tracing::instrument;
@@ -207,13 +206,16 @@ impl MerchandiseList {
             "UPDATE
                 merchandise_lists
             SET
-                form_list =
-                    jsonb_set(
+                form_list = CASE
+                    WHEN quantity::int + $4 = 0
+                        THEN form_list - elem_index::int
+                    ELSE jsonb_set(
                         form_list,
                         array[elem_index::text, 'quantity'],
                         to_jsonb(quantity::int + $4),
                         true
                     )
+                END
             FROM (
                 SELECT
                     pos - 1 as elem_index,

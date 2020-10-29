@@ -73,6 +73,11 @@ pub fn from_anyhow(error: anyhow::Error) -> HttpApiProblem {
                                 StatusCode::BAD_REQUEST,
                             )
                             .set_detail("Owner already has a shop with that name");
+                        } else if code == "23514" && constraint == "merchandise_quantity_gt_zero" {
+                            return HttpApiProblem::with_title_and_type_from_status(
+                                StatusCode::BAD_REQUEST,
+                            )
+                            .set_detail("Quantity of merchandise must be greater than zero");
                         }
                     }
                 }
