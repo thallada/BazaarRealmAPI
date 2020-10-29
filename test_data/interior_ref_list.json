@@ -3,8 +3,10 @@
   "owner_id": 1,
   "ref_list": [
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -14,8 +16,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -25,8 +29,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -36,8 +42,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -47,8 +55,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -58,8 +68,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -69,8 +81,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -80,8 +94,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -91,8 +107,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -102,8 +120,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -113,8 +133,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -124,8 +146,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -135,8 +159,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -146,8 +172,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -157,8 +185,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -168,8 +198,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -179,8 +211,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -190,8 +224,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -201,8 +237,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -212,8 +250,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -223,8 +263,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -234,8 +276,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -245,8 +289,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -256,8 +302,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -267,8 +315,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -278,8 +328,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -289,8 +341,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -300,8 +354,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -311,8 +367,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -322,8 +380,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -333,8 +393,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -344,8 +406,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -355,8 +419,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -366,8 +432,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -377,8 +445,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -388,8 +458,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -399,8 +471,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -410,8 +484,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -421,8 +497,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -432,8 +510,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -443,8 +523,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -454,8 +536,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -465,8 +549,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -476,8 +562,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -487,8 +575,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -498,8 +588,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -509,8 +601,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -520,8 +614,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -531,8 +627,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -542,8 +640,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -553,8 +653,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -564,8 +666,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -575,8 +679,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -586,8 +692,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -597,8 +705,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -608,8 +718,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -619,8 +731,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -630,8 +744,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -641,8 +757,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -652,8 +770,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -663,8 +783,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -674,8 +796,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -685,8 +809,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -696,8 +822,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -707,8 +835,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -718,8 +848,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -729,8 +861,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -740,8 +874,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -751,8 +887,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -762,8 +900,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -773,8 +913,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -784,8 +926,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -795,8 +939,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -806,8 +952,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -817,8 +965,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -828,8 +978,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -839,8 +991,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -850,8 +1004,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -861,8 +1017,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -872,8 +1030,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -883,8 +1043,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -894,8 +1056,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -905,8 +1069,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -916,8 +1082,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -927,8 +1095,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -938,8 +1108,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -949,8 +1121,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -960,8 +1134,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -971,8 +1147,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -982,8 +1160,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -993,8 +1173,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1004,8 +1186,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1015,8 +1199,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1026,8 +1212,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1037,8 +1225,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1048,8 +1238,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1059,8 +1251,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1070,8 +1264,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1081,8 +1277,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1092,8 +1290,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1103,8 +1303,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -1114,8 +1316,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1125,8 +1329,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1136,8 +1342,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1147,8 +1355,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1158,8 +1368,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1169,8 +1381,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1180,8 +1394,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1191,8 +1407,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1202,8 +1420,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1213,8 +1433,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1224,8 +1446,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1235,8 +1459,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1246,8 +1472,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1257,8 +1485,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1268,8 +1498,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1279,8 +1511,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1290,8 +1524,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1301,8 +1537,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1312,8 +1550,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1323,8 +1563,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -1334,8 +1576,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1345,8 +1589,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1356,8 +1602,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1367,8 +1615,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1378,8 +1628,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1389,8 +1641,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1400,8 +1654,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1411,8 +1667,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1422,8 +1680,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1433,8 +1693,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1444,8 +1706,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1455,8 +1719,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1466,8 +1732,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1477,8 +1745,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1488,8 +1758,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1499,8 +1771,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1510,8 +1784,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1521,8 +1797,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1532,8 +1810,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1543,8 +1823,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -1554,8 +1836,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1565,8 +1849,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1576,8 +1862,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1587,8 +1875,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1598,8 +1888,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1609,8 +1901,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1620,8 +1914,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1631,8 +1927,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1642,8 +1940,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1653,8 +1953,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1664,8 +1966,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1675,8 +1979,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1686,8 +1992,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1697,8 +2005,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1708,8 +2018,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1719,8 +2031,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1730,8 +2044,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1741,8 +2057,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1752,8 +2070,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1763,8 +2083,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -1774,8 +2096,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1785,8 +2109,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1796,8 +2122,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1807,8 +2135,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1818,8 +2148,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1829,8 +2161,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1840,8 +2174,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1851,8 +2187,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1862,8 +2200,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1873,8 +2213,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1884,8 +2226,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1895,8 +2239,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1906,8 +2252,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1917,8 +2265,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1928,8 +2278,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1939,8 +2291,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1950,8 +2304,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1961,8 +2317,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1972,8 +2330,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -1983,8 +2343,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 1,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 1,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 1,
       "position_x": 0.001,
       "position_y": 0.002,
       "position_z": 0.003,
@@ -1994,8 +2356,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 2,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 2,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 2,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2005,8 +2369,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 3,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 3,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 3,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2016,8 +2382,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 4,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 4,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 4,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2027,8 +2395,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 5,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 5,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 5,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2038,8 +2408,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 6,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 6,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 6,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2049,8 +2421,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 7,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 7,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 7,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2060,8 +2434,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 8,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 8,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 8,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2071,8 +2447,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 9,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 9,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 9,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2082,8 +2460,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 10,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 10,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 10,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2093,8 +2473,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 11,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 11,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 11,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2104,8 +2486,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 12,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 12,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 12,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2115,8 +2499,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 13,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 13,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 13,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2126,8 +2512,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 14,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 14,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 14,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2137,8 +2525,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 15,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 15,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 15,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2148,8 +2538,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 16,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 16,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 16,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2159,8 +2551,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 17,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 17,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 17,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2170,8 +2564,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 18,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 18,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 18,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2181,8 +2577,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 19,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 19,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 19,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,
@@ -2192,8 +2590,10 @@
       "scale": 1
     },
     {
-      "mod_name": "Skyrim.esm",
-      "local_form_id": 20,
+      "base_mod_name": "Skyrim.esm",
+      "base_local_form_id": 20,
+      "ref_mod_name": "Skyrim.esm",
+      "ref_local_form_id": 20,
       "position_x": 1.001,
       "position_y": 1.002,
       "position_z": 1.003,

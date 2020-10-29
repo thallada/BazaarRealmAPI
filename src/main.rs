@@ -1,5 +1,4 @@
 use anyhow::Result;
-use clap::Clap;
 use dotenv::dotenv;
 use http::StatusCode;
 use hyper::server::Server;
@@ -14,7 +13,6 @@ use url::Url;
 use warp::Filter;
 
 mod caches;
-mod db;
 mod handlers;
 #[macro_use]
 mod macros;
@@ -27,13 +25,6 @@ use models::merchandise_list::{MerchandiseList, MerchandiseParams};
 use models::owner::Owner;
 use models::shop::Shop;
 use models::ListParams;
-
-#[derive(Clap)]
-#[clap(version = "0.1.0", author = "Tyler Hallada <tyler@hallada.net>")]
-struct Opts {
-    #[clap(short, long)]
-    migrate: bool,
-}
 
 #[derive(Debug, Clone)]
 pub struct Environment {
@@ -69,7 +60,7 @@ fn json_body<T>() -> impl Filter<Extract = (T,), Error = warp::Rejection> + Clon
 where
     T: Send + DeserializeOwned,
 {
-    warp::body::content_length_limit(1024 * 64).and(warp::body::json())
+    warp::body::content_length_limit(1024 * 1024).and(warp::body::json())
 }
 
 #[tokio::main]
@@ -81,13 +72,6 @@ async fn main() -> Result<()> {
         .with_env_filter(env_log_filter)
         .with_span_events(FmtSpan::CLOSE)
         .init();
-    let opts: Opts = Opts::parse();
-
-    if opts.migrate {
-        info!("going to migrate now!");
-        db::migrate().await;
-        return Ok(());
-    }
 
     let host = env::var("HOST").expect("`HOST` environment variable not defined");
     let host_url = Url::parse(&host).expect("Cannot parse URL from `HOST` environment variable");

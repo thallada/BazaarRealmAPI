@@ -1,20 +1,21 @@
 # BazaarRealmAPI
+
 The API for the Bazaar Realm Skyrim mod which is responsible for storing and
 serving data related to the mod to all users.
 
 Right now, the types of data the API stores and the endpoints to access them
 are (all prefixed under `/v1`, the API version):
 
-* `/owners`: Every player character that has registered with this API server.
-   Contains their unique api key. Owners own shops.
-* `/shops`: Metadata about each shop including name, description, and who owns
-   it.
-* `/interior_ref_lists`: Lists of in-game ObjectReferences that are in the
-   interior of individual shops. When a user visits a shop, these references
-   are loaded into the cell.
-* `/merchandise_lists`: Lists of in-game Forms that are in the merchant chest
-   of individual shops. When a user visits a shop, these forms are loaded
-   onto the shop's shelves and are purchasable.
+- `/owners`: Every player character that has registered with this API server.
+  Contains their unique api key. Owners own shops.
+- `/shops`: Metadata about each shop including name, description, and who owns
+  it.
+- `/interior_ref_lists`: Lists of in-game ObjectReferences that are in the
+  interior of individual shops. When a user visits a shop, these references
+  are loaded into the cell.
+- `/merchandise_lists`: Lists of in-game Forms that are in the merchant chest
+  of individual shops. When a user visits a shop, these forms are loaded
+  onto the shop's shelves and are purchasable.
 
 Bazaar Realm was designed to allow users to change the API they are using the
 mod under, if they wish. The API can run on a small server with minimal
@@ -27,19 +28,20 @@ database](https://www.postgresql.org).
 
 Related projects:
 
-* [`BazaarRealmClient`](https://github.com/thallada/BazaarRealmClient): DLL that
+- [`BazaarRealmClient`](https://github.com/thallada/BazaarRealmClient): DLL that
   handles requests and responses to this API
-* [`BazaarRealmPlugin`](https://github.com/thallada/BazaarRealmPlugin):
+- [`BazaarRealmPlugin`](https://github.com/thallada/BazaarRealmPlugin):
   [SKSE](https://skse.silverlock.org/) plugin for the mod that modifies data
   within the Skyrim game engine
-* [`BazaarRealmMod`](https://github.com/thallada/BazaarRealmMod): Papyrus
+- [`BazaarRealmMod`](https://github.com/thallada/BazaarRealmMod): Papyrus
   scripts, ESP plugin, and all other resources for the mod
 
 ## Development Setup
 
 1. Install and run postgres.
-2. Create postgres user and database (and add uuid extension while you're there 
+2. Create postgres user and database (and add uuid extension while you're there
    ):
+
 ```
 createuser bazaarrealm
 createdb bazaarrealm
@@ -57,14 +59,18 @@ postgres=# ALTER DATABASE bazaarrealm OWNER TO bazaarrealm;
 \password bazaarrealm
 postgres=# CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
-3. Save password somewhere safe and then and add a `.env` file to the project 
+
+3. Save password somewhere safe and then and add a `.env` file to the project
    directory with the contents:
+
 ```
 DATABASE_URL=postgresql://bazaarrealm:<password>@localhost/bazaarrealm
 RUST_LOG="bazaar_realm_api=debug"
 HOST="http://localhost:3030"
 ```
+
 4. Create a new file at `src/db/refinery.toml` with the contents:
+
 ```
 [main]
 db_type = "Postgres"
@@ -74,9 +80,10 @@ db_user = "bazaarrealm"
 db_pass = "<database-password-here>"
 db_name = "bazaarrealm"
 ```
-5. Run `cargo run -- -m` which will compile the app in debug mode and run the 
-   database migrations.
-6. Run `./devserver.sh` to run the dev server (by default it listens at 
+
+5. Install `refinery_cli` with `cargo install refinery_cli` and run `refinery migrate -c ./src/db/refinery.toml files -p ./src/db/migrations/` which will
+   run the database migrations.
+6. Run `./devserver.sh` to run the dev server (by default it listens at
    `127.0.0.1:3030`).
 
 ## Testing Data
@@ -115,8 +122,8 @@ files that contain it, their data should be secure.
 
 ## Todo
 
-* Add update endpoints.
-* Add endpoints for the other models.
-* Make self-contained docker container that can run the app without any setup.
-* Add rate-limiting per IP address. The `tower` crate has a service that might 
+- Add update endpoints.
+- Add endpoints for the other models.
+- Make self-contained docker container that can run the app without any setup.
+- Add rate-limiting per IP address. The `tower` crate has a service that might
   be useful for this.
