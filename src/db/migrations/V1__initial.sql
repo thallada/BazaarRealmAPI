@@ -30,7 +30,7 @@ CREATE TABLE "merchandise_lists" (
     "shop_id" INTEGER REFERENCES "shops"(id) NOT NULL UNIQUE,
     "owner_id" INTEGER REFERENCES "owners"(id) NOT NULL,
     "form_list" jsonb NOT NULL
-        CONSTRAINT "merchandise_quantity_gt_zero" CHECK (form_list = '[]' OR NOT jsonb_path_exists(form_list, '$[*].quantity ? (@ < 1)')),
+        CONSTRAINT "merchandise_quantity_gt_zero" CHECK (NOT jsonb_path_exists(form_list, '$[*].quantity ? (@ < 1)')),
     "created_at" timestamp(3) NOT NULL,
     "updated_at" timestamp(3) NOT NULL
 );
