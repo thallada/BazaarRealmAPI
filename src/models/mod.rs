@@ -7,12 +7,14 @@ pub mod merchandise_list;
 pub mod model;
 pub mod owner;
 pub mod shop;
+pub mod transaction;
 
 pub use interior_ref_list::InteriorRefList;
 pub use merchandise_list::{MerchandiseList, MerchandiseParams};
 pub use model::{Model, UpdateableModel};
 pub use owner::Owner;
 pub use shop::Shop;
+pub use transaction::Transaction;
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
 pub enum Order {

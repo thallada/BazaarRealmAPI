@@ -34,3 +34,15 @@ CREATE TABLE "merchandise_lists" (
     "created_at" timestamp(3) NOT NULL,
     "updated_at" timestamp(3) NOT NULL
 );
+CREATE TABLE "transactions" (
+    "id" SERIAL PRIMARY KEY NOT NULL,
+    "shop_id" INTEGER REFERENCES "shops"(id) NOT NULL UNIQUE,
+    "owner_id" INTEGER REFERENCES "owners"(id) NOT NULL,
+    "mod_name" VARCHAR(260) NOT NULL,
+    "local_form_id" INTEGER NOT NULL,
+    "is_sell" BOOLEAN NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "created_at" timestamp(3) NOT NULL,
+    "updated_at" timestamp(3) NOT NULL
+);
