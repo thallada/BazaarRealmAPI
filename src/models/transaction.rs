@@ -1,12 +1,12 @@
-use anyhow::{Error, Result};
-use async_trait::async_trait;
+use anyhow::{anyhow, Error, Result};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::PgPool;
+use sqlx::pool::PoolConnection;
+use sqlx::{PgConnection, PgPool};
 use tracing::instrument;
+use url::Url;
 
 use super::ListParams;
-use super::Model;
 use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -16,6 +16,10 @@ pub struct Transaction {
     pub owner_id: Option<i32>,
     pub mod_name: String,
     pub local_form_id: i32,
+    pub name: String,
+    pub form_type: i32,
+    pub is_food: bool,
+    pub price: i32,
     pub is_sell: bool,
     pub quantity: i32,
     pub amount: i32,
@@ -23,18 +27,28 @@ pub struct Transaction {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-#[async_trait]
-impl Model for Transaction {
-    fn resource_name() -> &'static str {
+impl Transaction {
+    pub fn resource_name() -> &'static str {
         "transaction"
     }
 
-    fn pk(&self) -> Option<i32> {
+    pub fn pk(&self) -> Option<i32> {
         self.id
     }
 
+    pub fn url(&self, api_url: &Url) -> Result<Url> {
+        if let Some(pk) = self.pk() {
+            Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), pk))?)
+        } else {
+            Err(anyhow!(
+                "Cannot get URL for {} with no primary key",
+                Self::resource_name()
+            ))
+        }
+    }
+
     #[instrument(level = "debug", skip(db))]
-    async fn get(db: &PgPool, id: i32) -> Result<Self> {
+    pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
         sqlx::query_as!(Self, "SELECT * FROM transactions WHERE id = $1", id)
             .fetch_one(db)
             .await
@@ -42,17 +56,25 @@ impl Model for Transaction {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn create(self, db: &PgPool) -> Result<Self> {
+    pub async fn create(
+        self,
+        db: &mut sqlx::Transaction<PoolConnection<PgConnection>>,
+    ) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
             "INSERT INTO transactions
-            (shop_id, owner_id, mod_name, local_form_id, is_sell, quantity, amount, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, now(), now())
+            (shop_id, owner_id, mod_name, local_form_id, name, form_type, is_food, price,
+             is_sell, quantity, amount, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now(), now())
             RETURNING *",
             self.shop_id,
             self.owner_id,
             self.mod_name,
             self.local_form_id,
+            self.name,
+            self.form_type,
+            self.is_food,
+            self.price,
             self.is_sell,
             self.quantity,
             self.amount,
@@ -62,7 +84,7 @@ impl Model for Transaction {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+    pub async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
         let transaction = sqlx::query!("SELECT owner_id FROM transactions WHERE id = $1", id)
             .fetch_one(db)
             .await?;
@@ -76,7 +98,7 @@ impl Model for Transaction {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
+    pub async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
                 Self,
@@ -104,9 +126,7 @@ impl Model for Transaction {
         };
         Ok(result)
     }
-}
 
-impl Transaction {
     #[instrument(level = "debug", skip(db))]
     pub async fn list_by_shop_id(
         db: &PgPool,

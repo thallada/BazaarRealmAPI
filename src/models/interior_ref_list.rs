@@ -1,13 +1,12 @@
-use anyhow::{Error, Result};
-use async_trait::async_trait;
+use anyhow::{anyhow, Error, Result};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::PgPool;
 use sqlx::types::Json;
+use sqlx::PgPool;
 use tracing::instrument;
+use url::Url;
 
 use super::ListParams;
-use super::{Model, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 // sqlx queries for this model need to be `query_as_unchecked!` because `query_as!` does not
@@ -40,19 +39,29 @@ pub struct InteriorRefList {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-#[async_trait]
-impl Model for InteriorRefList {
-    fn resource_name() -> &'static str {
+impl InteriorRefList {
+    pub fn resource_name() -> &'static str {
         "interior_ref_list"
     }
 
-    fn pk(&self) -> Option<i32> {
+    pub fn pk(&self) -> Option<i32> {
         self.id
+    }
+
+    pub fn url(&self, api_url: &Url) -> Result<Url> {
+        if let Some(pk) = self.pk() {
+            Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), pk))?)
+        } else {
+            Err(anyhow!(
+                "Cannot get URL for {} with no primary key",
+                Self::resource_name()
+            ))
+        }
     }
 
     // TODO: this model will probably never need to be accessed through it's ID, should these methods be removed/unimplemented?
     #[instrument(level = "debug", skip(db))]
-    async fn get(db: &PgPool, id: i32) -> Result<Self> {
+    pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
         sqlx::query_as_unchecked!(Self, "SELECT * FROM interior_ref_lists WHERE id = $1", id)
             .fetch_one(db)
             .await
@@ -60,7 +69,7 @@ impl Model for InteriorRefList {
     }
 
     #[instrument(level = "debug", skip(self, db))]
-    async fn create(self, db: &PgPool) -> Result<Self> {
+    pub async fn create(self, db: &PgPool) -> Result<Self> {
         // TODO:
         // * Decide if I'll need to make the same changes to merchandise and transactions
         //      - answer depends on how many rows of each I expect to insert in one go
@@ -80,7 +89,7 @@ impl Model for InteriorRefList {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+    pub async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
         let interior_ref_list =
             sqlx::query!("SELECT owner_id FROM interior_ref_lists WHERE id = $1", id)
                 .fetch_one(db)
@@ -97,7 +106,7 @@ impl Model for InteriorRefList {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
+    pub async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as_unchecked!(
                 Self,
@@ -125,12 +134,9 @@ impl Model for InteriorRefList {
         };
         Ok(result)
     }
-}
 
-#[async_trait]
-impl UpdateableModel for InteriorRefList {
     #[instrument(level = "debug", skip(self, db))]
-    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+    pub async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
         let interior_ref_list =
             sqlx::query!("SELECT owner_id FROM interior_ref_lists WHERE id = $1", id)
                 .fetch_one(db)
@@ -152,9 +158,7 @@ impl UpdateableModel for InteriorRefList {
             return Err(forbidden_permission());
         }
     }
-}
 
-impl InteriorRefList {
     #[instrument(level = "debug", skip(db))]
     pub async fn get_by_shop_id(db: &PgPool, shop_id: i32) -> Result<Self> {
         sqlx::query_as_unchecked!(

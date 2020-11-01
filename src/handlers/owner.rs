@@ -6,7 +6,7 @@ use uuid::Uuid;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
-use crate::models::{ListParams, Model, Owner, UpdateableModel};
+use crate::models::{ListParams, Owner};
 use crate::problem::{reject_anyhow, unauthorized_no_api_key};
 use crate::Environment;
 

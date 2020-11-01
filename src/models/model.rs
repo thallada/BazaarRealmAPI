@@ -5,6 +5,14 @@ use url::Url;
 
 use super::ListParams;
 
+// TODO: I stopped using this because I needed to accept a transaction instead of a &PgPool for these methods on certain models.
+// It would be nice to find a way to impl this trait for all my models so I don't have to keep redoing the `url` function on
+// each. But, maybe I'm trying to use Traits in an OOP way and that's bad, idk.
+//
+// @NyxCode on discord: "on 0.4, you can use impl Executor<'_, Database = Postgres>. I use it everywhere, and it works for
+// &PgPool, &mut PgConnection and &mut Transaction"
+//
+// I attempted to use `impl Executor<Database = Postgres>` in 0.3.5 but it created a recursive type error :(
 #[async_trait]
 pub trait Model
 where

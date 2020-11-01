@@ -1,14 +1,13 @@
-use anyhow::{Error, Result};
-use async_trait::async_trait;
+use anyhow::{anyhow, Error, Result};
 use chrono::prelude::*;
 use ipnetwork::IpNetwork;
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::PgPool;
+use sqlx::PgPool;
 use tracing::instrument;
+use url::Url;
 use uuid::Uuid;
 
 use super::ListParams;
-use super::{Model, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -24,18 +23,28 @@ pub struct Owner {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-#[async_trait]
-impl Model for Owner {
-    fn resource_name() -> &'static str {
+impl Owner {
+    pub fn resource_name() -> &'static str {
         "owner"
     }
 
-    fn pk(&self) -> Option<i32> {
+    pub fn pk(&self) -> Option<i32> {
         self.id
     }
 
+    pub fn url(&self, api_url: &Url) -> Result<Url> {
+        if let Some(pk) = self.pk() {
+            Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), pk))?)
+        } else {
+            Err(anyhow!(
+                "Cannot get URL for {} with no primary key",
+                Self::resource_name()
+            ))
+        }
+    }
+
     #[instrument(level = "debug", skip(db))]
-    async fn get(db: &PgPool, id: i32) -> Result<Self> {
+    pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
         sqlx::query_as!(Self, "SELECT * FROM owners WHERE id = $1", id)
             .fetch_one(db)
             .await
@@ -43,7 +52,7 @@ impl Model for Owner {
     }
 
     #[instrument(level = "debug", skip(self, db))]
-    async fn create(self, db: &PgPool) -> Result<Self> {
+    pub async fn create(self, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
             "INSERT INTO owners
@@ -60,7 +69,7 @@ impl Model for Owner {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+    pub async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
         let owner = sqlx::query!("SELECT id FROM owners WHERE id = $1", id)
             .fetch_one(db)
             .await?;
@@ -74,7 +83,7 @@ impl Model for Owner {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
+    pub async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
                 Self,
@@ -102,12 +111,9 @@ impl Model for Owner {
         };
         Ok(result)
     }
-}
 
-#[async_trait]
-impl UpdateableModel for Owner {
     #[instrument(level = "debug", skip(self, db))]
-    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+    pub async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
         let owner = sqlx::query!("SELECT id FROM owners WHERE id = $1", id)
             .fetch_one(db)
             .await?;

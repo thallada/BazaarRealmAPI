@@ -10,7 +10,7 @@ pub mod shop;
 pub mod transaction;
 
 pub use interior_ref_list::InteriorRefList;
-pub use merchandise_list::{MerchandiseList, MerchandiseParams};
+pub use merchandise_list::MerchandiseList;
 pub use model::{Model, UpdateableModel};
 pub use owner::Owner;
 pub use shop::Shop;

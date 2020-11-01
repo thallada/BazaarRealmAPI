@@ -1,13 +1,16 @@
-use anyhow::{Error, Result};
-use async_trait::async_trait;
+use anyhow::{anyhow, Context, Error, Result};
 use chrono::prelude::*;
+use http::StatusCode;
+use http_api_problem::HttpApiProblem;
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::PgPool;
+use serde_json::json;
+use sqlx::pool::PoolConnection;
 use sqlx::types::Json;
+use sqlx::{PgConnection, PgPool, Transaction};
 use tracing::instrument;
+use url::Url;
 
 use super::ListParams;
-use super::{Model, UpdateableModel};
 use crate::problem::forbidden_permission;
 
 // sqlx queries for this model need to be `query_as_unchecked!` because `query_as!` does not
@@ -36,26 +39,29 @@ pub struct MerchandiseList {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-#[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
-pub struct MerchandiseParams {
-    pub mod_name: String,
-    pub local_form_id: i32,
-    pub quantity_delta: i32,
-}
-
-#[async_trait]
-impl Model for MerchandiseList {
-    fn resource_name() -> &'static str {
+impl MerchandiseList {
+    pub fn resource_name() -> &'static str {
         "merchandise_list"
     }
 
-    fn pk(&self) -> Option<i32> {
+    pub fn pk(&self) -> Option<i32> {
         self.id
+    }
+
+    pub fn url(&self, api_url: &Url) -> Result<Url> {
+        if let Some(pk) = self.pk() {
+            Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), pk))?)
+        } else {
+            Err(anyhow!(
+                "Cannot get URL for {} with no primary key",
+                Self::resource_name()
+            ))
+        }
     }
 
     // TODO: this model will probably never need to be accessed through it's ID, should these methods be removed/unimplemented?
     #[instrument(level = "debug", skip(db))]
-    async fn get(db: &PgPool, id: i32) -> Result<Self> {
+    pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
         sqlx::query_as_unchecked!(Self, "SELECT * FROM merchandise_lists WHERE id = $1", id)
             .fetch_one(db)
             .await
@@ -63,7 +69,7 @@ impl Model for MerchandiseList {
     }
 
     #[instrument(level = "debug", skip(self, db))]
-    async fn create(self, db: &PgPool) -> Result<Self> {
+    pub async fn create(self, db: &PgPool) -> Result<Self> {
         Ok(sqlx::query_as_unchecked!(
             Self,
             "INSERT INTO merchandise_lists
@@ -79,7 +85,7 @@ impl Model for MerchandiseList {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+    pub async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
         let merchandise_list =
             sqlx::query!("SELECT owner_id FROM merchandise_lists WHERE id = $1", id)
                 .fetch_one(db)
@@ -96,7 +102,7 @@ impl Model for MerchandiseList {
     }
 
     #[instrument(level = "debug", skip(db))]
-    async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
+    pub async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as_unchecked!(
                 Self,
@@ -124,12 +130,9 @@ impl Model for MerchandiseList {
         };
         Ok(result)
     }
-}
 
-#[async_trait]
-impl UpdateableModel for MerchandiseList {
     #[instrument(level = "debug", skip(self, db))]
-    async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
+    pub async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
         let merchandise_list =
             sqlx::query!("SELECT owner_id FROM merchandise_lists WHERE id = $1", id)
                 .fetch_one(db)
@@ -151,9 +154,7 @@ impl UpdateableModel for MerchandiseList {
             return Err(forbidden_permission());
         }
     }
-}
 
-impl MerchandiseList {
     #[instrument(level = "debug", skip(db))]
     pub async fn get_by_shop_id(db: &PgPool, shop_id: i32) -> Result<Self> {
         sqlx::query_as_unchecked!(
@@ -195,26 +196,43 @@ impl MerchandiseList {
 
     #[instrument(level = "debug", skip(db))]
     pub async fn update_merchandise_quantity(
-        db: &PgPool,
+        db: &mut Transaction<PoolConnection<PgConnection>>,
         shop_id: i32,
         mod_name: &str,
         local_form_id: i32,
+        name: &str,
+        form_type: i32,
+        is_food: bool,
+        price: i32,
         quantity_delta: i32,
     ) -> Result<Self> {
+        let add_item = json!([{
+            "mod_name": mod_name,
+            "local_form_id": local_form_id,
+            "name": name,
+            "quantity": quantity_delta,
+            "form_type": form_type,
+            "is_food": is_food,
+            "price": price,
+        }]);
         Ok(sqlx::query_as_unchecked!(
             Self,
             "UPDATE
                 merchandise_lists
             SET
                 form_list = CASE
-                    WHEN quantity::int + $4 = 0
+                    WHEN elem_index IS NULL AND quantity IS NULL AND $4 > 0
+                        THEN form_list || $5
+                    WHEN elem_index IS NOT NULL AND quantity IS NOT NULL AND quantity::int + $4 = 0
                         THEN form_list - elem_index::int
-                    ELSE jsonb_set(
-                        form_list,
-                        array[elem_index::text, 'quantity'],
-                        to_jsonb(quantity::int + $4),
-                        true
-                    )
+                    WHEN elem_index IS NOT NULL AND quantity IS NOT NULL
+                        THEN jsonb_set(
+                            form_list,
+                            array[elem_index::text, 'quantity'],
+                            to_jsonb(quantity::int + $4),
+                            true
+                        )
+                    ELSE NULL
                 END
             FROM (
                 SELECT
@@ -227,6 +245,10 @@ impl MerchandiseList {
                     shop_id = $1 AND
                     elem->>'mod_name' = $2::text AND
                     elem->>'local_form_id' = $3::text
+                UNION ALL
+                SELECT
+                    NULL as elem_index, NULL as quantity
+                LIMIT 1
             ) sub
             WHERE
                 shop_id = $1
@@ -235,8 +257,26 @@ impl MerchandiseList {
             mod_name,
             local_form_id,
             quantity_delta,
+            add_item,
         )
         .fetch_one(db)
-        .await?)
+        .await
+        .map_err(|error| {
+            let anyhow_error = anyhow!(error);
+            if let Some(sqlx::error::Error::Database(db_error)) =
+                anyhow_error.downcast_ref::<sqlx::error::Error>()
+            {
+                if db_error.code() == Some("23502") && db_error.column_name() == Some("form_list") {
+                    return anyhow!(HttpApiProblem::with_title_and_type_from_status(
+                        StatusCode::NOT_FOUND
+                    )
+                    .set_detail(format!(
+                        "Cannot find merchandise to buy with mod_name: {} and local_form_id: {:#010X}",
+                        mod_name, local_form_id
+                    )));
+                }
+            }
+            anyhow_error
+        })?)
     }
 }

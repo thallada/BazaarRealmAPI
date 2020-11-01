@@ -1,10 +1,10 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use http::StatusCode;
 use uuid::Uuid;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
-use crate::models::{ListParams, Model, Transaction};
+use crate::models::{ListParams, MerchandiseList, Transaction};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
@@ -60,10 +60,35 @@ pub async fn create(
         owner_id: Some(owner_id),
         ..transaction
     };
+    let mut tx = env
+        .db
+        .begin()
+        .await
+        .map_err(|error| reject_anyhow(anyhow!(error)))?;
     let saved_transaction = transaction_with_owner_id
-        .create(&env.db)
+        .create(&mut tx)
         .await
         .map_err(reject_anyhow)?;
+    let quantity_delta = match transaction.is_sell {
+        true => transaction.quantity,
+        false => transaction.quantity * -1,
+    };
+    let updated_merchandise_list = MerchandiseList::update_merchandise_quantity(
+        &mut tx,
+        saved_transaction.shop_id,
+        &(saved_transaction.mod_name),
+        saved_transaction.local_form_id,
+        &(saved_transaction.name),
+        saved_transaction.form_type,
+        saved_transaction.is_food,
+        saved_transaction.price,
+        quantity_delta,
+    )
+    .await
+    .map_err(reject_anyhow)?;
+    tx.commit()
+        .await
+        .map_err(|error| reject_anyhow(anyhow!(error)))?;
     let url = saved_transaction.url(&env.api_url).map_err(reject_anyhow)?;
     let reply = json(&saved_transaction);
     let reply = with_header(reply, "Location", url.as_str());
@@ -71,6 +96,19 @@ pub async fn create(
     // TODO: will this make these caches effectively useless?
     env.caches.list_transactions.clear().await;
     env.caches.list_transactions_by_shop_id.clear().await;
+    env.caches
+        .merchandise_list
+        .delete_response(
+            updated_merchandise_list
+                .id
+                .expect("saved merchandise_list has no id"),
+        )
+        .await;
+    env.caches
+        .merchandise_list_by_shop_id
+        .delete_response(updated_merchandise_list.shop_id)
+        .await;
+    env.caches.list_merchandise_lists.clear().await;
     Ok(reply)
 }
 
@@ -80,7 +118,6 @@ pub async fn delete(
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let transaction = Transaction::get(&env.db, id).await.map_err(reject_anyhow)?;
     Transaction::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;

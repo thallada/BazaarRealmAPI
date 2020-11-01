@@ -4,7 +4,7 @@ use uuid::Uuid;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
-use crate::models::{ListParams, MerchandiseList, MerchandiseParams, Model, UpdateableModel};
+use crate::models::{ListParams, MerchandiseList};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
@@ -168,43 +168,4 @@ pub async fn delete(
         .await;
     env.caches.list_merchandise_lists.clear().await;
     Ok(StatusCode::NO_CONTENT)
-}
-
-pub async fn buy_merchandise(
-    shop_id: i32,
-    merchandise_params: MerchandiseParams,
-    api_key: Option<Uuid>,
-    env: Environment,
-) -> Result<impl Reply, Rejection> {
-    let _owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    // TODO: create transaction
-    let updated_merchandise_list = MerchandiseList::update_merchandise_quantity(
-        &env.db,
-        shop_id,
-        &(merchandise_params.mod_name),
-        merchandise_params.local_form_id,
-        merchandise_params.quantity_delta,
-    )
-    .await
-    .map_err(reject_anyhow)?;
-    let url = updated_merchandise_list
-        .url(&env.api_url)
-        .map_err(reject_anyhow)?;
-    let reply = json(&updated_merchandise_list);
-    let reply = with_header(reply, "Location", url.as_str());
-    let reply = with_status(reply, StatusCode::CREATED);
-    env.caches
-        .merchandise_list
-        .delete_response(
-            updated_merchandise_list
-                .id
-                .expect("saved merchandise_list has no id"),
-        )
-        .await;
-    env.caches
-        .merchandise_list_by_shop_id
-        .delete_response(updated_merchandise_list.shop_id)
-        .await;
-    env.caches.list_merchandise_lists.clear().await;
-    Ok(reply)
 }

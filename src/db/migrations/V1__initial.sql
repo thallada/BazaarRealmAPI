@@ -34,15 +34,23 @@ CREATE TABLE "merchandise_lists" (
     "created_at" timestamp(3) NOT NULL,
     "updated_at" timestamp(3) NOT NULL
 );
+CREATE INDEX "merchandise_lists_mod_name_and_local_form_id" ON "merchandise_lists" USING GIN (form_list jsonb_path_ops);
 CREATE TABLE "transactions" (
     "id" SERIAL PRIMARY KEY NOT NULL,
-    "shop_id" INTEGER REFERENCES "shops"(id) NOT NULL UNIQUE,
+    "shop_id" INTEGER REFERENCES "shops"(id) NOT NULL,
     "owner_id" INTEGER REFERENCES "owners"(id) NOT NULL,
     "mod_name" VARCHAR(260) NOT NULL,
     "local_form_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "form_type" INTEGER NOT NULL,
+    "is_food" BOOLEAN NOT NULL,
+    "price" INTEGER NOT NULL,
     "is_sell" BOOLEAN NOT NULL,
     "quantity" INTEGER NOT NULL,
     "amount" INTEGER NOT NULL,
     "created_at" timestamp(3) NOT NULL,
     "updated_at" timestamp(3) NOT NULL
 );
+CREATE INDEX "transactions_shop_id" ON "transactions" ("shop_id");
+CREATE INDEX "transactions_owner_id" ON "transactions" ("owner_id");
+CREATE INDEX "transactions_mod_name_and_local_form_id" ON "transactions" ("mod_name", "local_form_id");

@@ -19,9 +19,7 @@ mod models;
 mod problem;
 
 use caches::Caches;
-use models::{
-    InteriorRefList, ListParams, MerchandiseList, MerchandiseParams, Owner, Shop, Transaction,
-};
+use models::{InteriorRefList, ListParams, MerchandiseList, Owner, Shop, Transaction};
 
 #[derive(Debug, Clone)]
 pub struct Environment {
@@ -273,16 +271,6 @@ async fn main() -> Result<()> {
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::get_by_shop_id),
     );
-    let buy_merchandise_handler = warp::path("shops").and(
-        warp::path::param()
-            .and(warp::path("buy_merchandise"))
-            .and(warp::path::end())
-            .and(warp::post())
-            .and(warp::query::<MerchandiseParams>())
-            .and(warp::header::optional("api-key"))
-            .and(with_env(env.clone()))
-            .and_then(handlers::merchandise_list::buy_merchandise),
-    );
     let get_transaction_handler = warp::path("transactions").and(
         warp::path::param()
             .and(warp::path::end())
@@ -341,7 +329,6 @@ async fn main() -> Result<()> {
             update_interior_ref_list_by_shop_id_handler,
             update_merchandise_list_by_shop_id_handler,
             list_transactions_by_shop_id_handler,
-            buy_merchandise_handler,
             get_interior_ref_list_handler,
             delete_interior_ref_list_handler,
             update_interior_ref_list_handler,

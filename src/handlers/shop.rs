@@ -5,7 +5,7 @@ use uuid::Uuid;
 use warp::reply::{json, with_header, with_status};
 use warp::{Rejection, Reply};
 
-use crate::models::{InteriorRefList, ListParams, MerchandiseList, Model, Shop, UpdateableModel};
+use crate::models::{InteriorRefList, ListParams, MerchandiseList, Shop};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
