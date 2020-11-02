@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Error, Result};
+use anyhow::{anyhow, Error, Result};
 use chrono::prelude::*;
 use http::StatusCode;
 use http_api_problem::HttpApiProblem;
@@ -168,7 +168,7 @@ impl MerchandiseList {
         .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(db))]
+    #[instrument(level = "debug", skip(self, db))]
     pub async fn update_by_shop_id(self, db: &PgPool, owner_id: i32, shop_id: i32) -> Result<Self> {
         let merchandise_list = sqlx::query!(
             "SELECT owner_id FROM merchandise_lists WHERE shop_id = $1",
