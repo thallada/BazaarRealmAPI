@@ -9,30 +9,38 @@ use crate::models::{InteriorRefList, ListParams, MerchandiseList, Shop};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
-use super::authenticate;
+use super::{authenticate, check_etag, JsonWithETag};
 
-pub async fn get(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
-    env.caches
+pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
+    let response = env
+        .caches
         .shop
         .get_response(id, || async {
             let shop = Shop::get(&env.db, id).await?;
-            let reply = json(&shop);
+            let reply = JsonWithETag::from_serializable(&shop)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
-        .await
+        .await?;
+    Ok(check_etag(etag, response))
 }
 
-pub async fn list(list_params: ListParams, env: Environment) -> Result<impl Reply, Rejection> {
-    env.caches
+pub async fn list(
+    list_params: ListParams,
+    etag: Option<String>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let response = env
+        .caches
         .list_shops
         .get_response(list_params.clone(), || async {
             let shops = Shop::list(&env.db, &list_params).await?;
-            let reply = json(&shops);
+            let reply = JsonWithETag::from_serializable(&shops)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
-        .await
+        .await?;
+    Ok(check_etag(etag, response))
 }
 
 pub async fn create(

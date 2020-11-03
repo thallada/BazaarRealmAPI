@@ -8,42 +8,56 @@ use crate::models::{InteriorRefList, ListParams};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
-use super::authenticate;
+use super::{authenticate, check_etag, JsonWithETag};
 
-pub async fn get(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
-    env.caches
+pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
+    let response = env
+        .caches
         .interior_ref_list
         .get_response(id, || async {
             let interior_ref_list = InteriorRefList::get(&env.db, id).await?;
-            let reply = json(&interior_ref_list);
+            let reply = JsonWithETag::from_serializable(&interior_ref_list)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
-        .await
+        .await?;
+    Ok(check_etag(etag, response))
 }
 
-pub async fn get_by_shop_id(shop_id: i32, env: Environment) -> Result<impl Reply, Rejection> {
-    env.caches
+pub async fn get_by_shop_id(
+    shop_id: i32,
+    etag: Option<String>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let response = env
+        .caches
         .interior_ref_list_by_shop_id
         .get_response(shop_id, || async {
             let interior_ref_list = InteriorRefList::get_by_shop_id(&env.db, shop_id).await?;
-            let reply = json(&interior_ref_list);
+            let reply = JsonWithETag::from_serializable(&interior_ref_list)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
-        .await
+        .await?;
+    Ok(check_etag(etag, response))
 }
 
-pub async fn list(list_params: ListParams, env: Environment) -> Result<impl Reply, Rejection> {
-    env.caches
+pub async fn list(
+    list_params: ListParams,
+    etag: Option<String>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let response = env
+        .caches
         .list_interior_ref_lists
         .get_response(list_params.clone(), || async {
             let interior_ref_lists = InteriorRefList::list(&env.db, &list_params).await?;
-            let reply = json(&interior_ref_lists);
+            let reply = JsonWithETag::from_serializable(&interior_ref_lists)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
-        .await
+        .await?;
+    Ok(check_etag(etag, response))
 }
 
 pub async fn create(

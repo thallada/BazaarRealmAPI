@@ -106,21 +106,23 @@ where
 
         self.log_with_key(&key, "get_response: miss");
         let reply = getter().await.map_err(reject_anyhow);
-        let cached_response = match reply {
-            Ok(reply) => CachedResponse::from_reply(reply)
-                .await
-                .map_err(reject_anyhow)?,
+        Ok(match reply {
+            Ok(reply) => {
+                let cached_response = CachedResponse::from_reply(reply)
+                    .await
+                    .map_err(reject_anyhow)?;
+                let mut guard = self.lru_mutex.lock().await;
+                guard.put(key, cached_response.clone());
+                cached_response
+            }
             Err(rejection) => {
+                self.log_with_key(&key, "get_response: getter returned rejection, not caching");
                 let reply = unpack_problem(rejection).await?;
                 CachedResponse::from_reply(reply)
                     .await
                     .map_err(reject_anyhow)?
             }
-        };
-        let mut guard = self.lru_mutex.lock().await;
-        guard.put(key, cached_response.clone());
-
-        Ok(cached_response)
+        })
     }
 
     pub async fn delete_response(&self, key: K) -> Option<CachedResponse> {

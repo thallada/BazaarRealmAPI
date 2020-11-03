@@ -1,4 +1,5 @@
 use anyhow::Result;
+use http::header::ETAG;
 use http::{HeaderMap, HeaderValue, Response, StatusCode, Version};
 use hyper::body::{to_bytes, Body, Bytes};
 use warp::Reply;
@@ -23,6 +24,17 @@ impl CachedResponse {
             headers: response.headers().clone(),
             body: to_bytes(response.body_mut()).await?,
         })
+    }
+
+    pub fn not_modified(etag: HeaderValue) -> Self {
+        let mut headers = HeaderMap::new();
+        headers.insert(ETAG, etag);
+        Self {
+            status: StatusCode::NOT_MODIFIED,
+            version: Version::HTTP_11,
+            headers,
+            body: Bytes::new(),
+        }
     }
 }
 

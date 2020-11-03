@@ -81,6 +81,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::get())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::owner::get),
     );
@@ -115,6 +116,7 @@ async fn main() -> Result<()> {
         warp::path::end()
             .and(warp::get())
             .and(warp::query::<ListParams>())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::owner::list),
     );
@@ -122,6 +124,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::get())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::shop::get),
     );
@@ -154,6 +157,7 @@ async fn main() -> Result<()> {
         warp::path::end()
             .and(warp::get())
             .and(warp::query::<ListParams>())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::shop::list),
     );
@@ -161,6 +165,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::get())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::get),
     );
@@ -203,6 +208,7 @@ async fn main() -> Result<()> {
         warp::path::end()
             .and(warp::get())
             .and(warp::query::<ListParams>())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::list),
     );
@@ -211,6 +217,7 @@ async fn main() -> Result<()> {
             .and(warp::path("interior_ref_list"))
             .and(warp::path::end())
             .and(warp::get())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::get_by_shop_id),
     );
@@ -218,6 +225,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::get())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::get),
     );
@@ -260,6 +268,7 @@ async fn main() -> Result<()> {
         warp::path::end()
             .and(warp::get())
             .and(warp::query::<ListParams>())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::list),
     );
@@ -268,6 +277,7 @@ async fn main() -> Result<()> {
             .and(warp::path("merchandise_list"))
             .and(warp::path::end())
             .and(warp::get())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::get_by_shop_id),
     );
@@ -275,6 +285,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::get())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::transaction::get),
     );
@@ -298,6 +309,7 @@ async fn main() -> Result<()> {
         warp::path::end()
             .and(warp::get())
             .and(warp::query::<ListParams>())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::transaction::list),
     );
@@ -307,6 +319,7 @@ async fn main() -> Result<()> {
             .and(warp::path::end())
             .and(warp::get())
             .and(warp::query::<ListParams>())
+            .and(warp::header::optional("if-none-match"))
             .and(with_env(env.clone()))
             .and_then(handlers::transaction::list_by_shop_id),
     );

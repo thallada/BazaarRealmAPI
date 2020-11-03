@@ -10,30 +10,38 @@ use crate::models::{ListParams, Owner};
 use crate::problem::{reject_anyhow, unauthorized_no_api_key};
 use crate::Environment;
 
-use super::authenticate;
+use super::{authenticate, check_etag, JsonWithETag};
 
-pub async fn get(id: i32, env: Environment) -> Result<impl Reply, Rejection> {
-    env.caches
+pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
+    let response = env
+        .caches
         .owner
         .get_response(id, || async {
             let owner = Owner::get(&env.db, id).await?;
-            let reply = json(&owner);
+            let reply = JsonWithETag::from_serializable(&owner)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
-        .await
+        .await?;
+    Ok(check_etag(etag, response))
 }
 
-pub async fn list(list_params: ListParams, env: Environment) -> Result<impl Reply, Rejection> {
-    env.caches
+pub async fn list(
+    list_params: ListParams,
+    etag: Option<String>,
+    env: Environment,
+) -> Result<impl Reply, Rejection> {
+    let response = env
+        .caches
         .list_owners
         .get_response(list_params.clone(), || async {
             let owners = Owner::list(&env.db, &list_params).await?;
-            let reply = json(&owners);
+            let reply = JsonWithETag::from_serializable(&owners)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
-        .await
+        .await?;
+    Ok(check_etag(etag, response))
 }
 
 pub async fn create(

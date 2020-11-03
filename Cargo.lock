@@ -144,6 +144,7 @@ dependencies = [
  "ipnetwork",
  "listenfd",
  "lru",
+ "seahash",
  "serde",
  "serde_json",
  "sqlx",
@@ -1367,6 +1368,12 @@ name = "scoped-tls"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea6a9290e3c9cf0f18145ef7ffa62d68ee0bf5fcd651017e586dc7fd5da448c2"
+
+[[package]]
+name = "seahash"
+version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39ee459cae272d224928ca09a1df5406da984f263dc544f9f8bde92a8c3dc916"
 
 [[package]]
 name = "security-framework"
