@@ -3,7 +3,7 @@ use http::StatusCode;
 use ipnetwork::IpNetwork;
 use std::net::SocketAddr;
 use uuid::Uuid;
-use warp::reply::{json, with_header, with_status};
+use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
 use crate::models::{ListParams, Owner};
@@ -69,7 +69,7 @@ pub async fn create(
             .await
             .map_err(reject_anyhow)?;
         let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
-        let reply = json(&saved_owner);
+        let reply = JsonWithETag::from_serializable(&saved_owner).map_err(reject_anyhow)?;
         let reply = with_header(reply, "Location", url.as_str());
         let reply = with_status(reply, StatusCode::CREATED);
         env.caches.list_owners.clear().await;
@@ -95,7 +95,7 @@ pub async fn update(
         .await
         .map_err(reject_anyhow)?;
     let url = updated_owner.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = json(&updated_owner);
+    let reply = JsonWithETag::from_serializable(&updated_owner).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches.owner.delete_response(id).await;

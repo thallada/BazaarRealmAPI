@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use http::StatusCode;
 use uuid::Uuid;
-use warp::reply::{json, with_header, with_status};
+use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
 use crate::models::{ListParams, MerchandiseList, Transaction};
@@ -101,7 +101,7 @@ pub async fn create(
         .await
         .map_err(|error| reject_anyhow(anyhow!(error)))?;
     let url = saved_transaction.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = json(&saved_transaction);
+    let reply = JsonWithETag::from_serializable(&saved_transaction).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     // TODO: will this make these caches effectively useless?

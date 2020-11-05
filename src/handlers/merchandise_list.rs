@@ -1,7 +1,7 @@
 use anyhow::Result;
 use http::StatusCode;
 use uuid::Uuid;
-use warp::reply::{json, with_header, with_status};
+use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
 use crate::models::{ListParams, MerchandiseList};
@@ -77,7 +77,7 @@ pub async fn create(
     let url = saved_merchandise_list
         .url(&env.api_url)
         .map_err(reject_anyhow)?;
-    let reply = json(&saved_merchandise_list);
+    let reply = JsonWithETag::from_serializable(&saved_merchandise_list).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches.list_merchandise_lists.clear().await;
@@ -114,7 +114,8 @@ pub async fn update(
     let url = updated_merchandise_list
         .url(&env.api_url)
         .map_err(reject_anyhow)?;
-    let reply = json(&updated_merchandise_list);
+    let reply =
+        JsonWithETag::from_serializable(&updated_merchandise_list).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches.merchandise_list.delete_response(id).await;
@@ -144,7 +145,8 @@ pub async fn update_by_shop_id(
     let url = updated_merchandise_list
         .url(&env.api_url)
         .map_err(reject_anyhow)?;
-    let reply = json(&updated_merchandise_list);
+    let reply =
+        JsonWithETag::from_serializable(&updated_merchandise_list).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches

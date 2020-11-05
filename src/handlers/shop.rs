@@ -2,7 +2,7 @@ use anyhow::Result;
 use http::StatusCode;
 use sqlx::types::Json;
 use uuid::Uuid;
-use warp::reply::{json, with_header, with_status};
+use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
 use crate::models::{InteriorRefList, ListParams, MerchandiseList, Shop};
@@ -87,7 +87,7 @@ pub async fn create(
     }
 
     let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = json(&saved_shop);
+    let reply = JsonWithETag::from_serializable(&saved_shop).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches.list_shops.clear().await;
@@ -119,7 +119,7 @@ pub async fn update(
         .await
         .map_err(reject_anyhow)?;
     let url = updated_shop.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = json(&updated_shop);
+    let reply = JsonWithETag::from_serializable(&updated_shop).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     env.caches.shop.delete_response(id).await;
