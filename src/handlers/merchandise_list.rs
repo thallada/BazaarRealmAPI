@@ -9,7 +9,7 @@ use crate::models::{ListParams, MerchandiseList};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
-use super::{authenticate, check_etag, JsonWithETag};
+use super::{authenticate, check_etag, AcceptHeader, BincodeWithETag, JsonWithETag};
 
 pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
     let response = CACHES
@@ -27,17 +27,35 @@ pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl
 pub async fn get_by_shop_id(
     shop_id: i32,
     etag: Option<String>,
+    accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let response = CACHES
-        .merchandise_list_by_shop_id
-        .get_response(shop_id, || async {
-            let merchandise_list = MerchandiseList::get_by_shop_id(&env.db, shop_id).await?;
-            let reply = JsonWithETag::from_serializable(&merchandise_list)?;
-            let reply = with_status(reply, StatusCode::OK);
-            Ok(reply)
-        })
-        .await?;
+    let response = match accept {
+        Some(accept) if accept.accepts_bincode() => {
+            CACHES
+                .merchandise_list_by_shop_id_bin
+                .get_response(shop_id, || async {
+                    let merchandise_list =
+                        MerchandiseList::get_by_shop_id(&env.db, shop_id).await?;
+                    let reply = BincodeWithETag::from_serializable(&merchandise_list)?;
+                    let reply = with_status(reply, StatusCode::OK);
+                    Ok(reply)
+                })
+                .await?
+        }
+        _ => {
+            CACHES
+                .merchandise_list_by_shop_id
+                .get_response(shop_id, || async {
+                    let merchandise_list =
+                        MerchandiseList::get_by_shop_id(&env.db, shop_id).await?;
+                    let reply = JsonWithETag::from_serializable(&merchandise_list)?;
+                    let reply = with_status(reply, StatusCode::OK);
+                    Ok(reply)
+                })
+                .await?
+        }
+    };
     Ok(check_etag(etag, response))
 }
 

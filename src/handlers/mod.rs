@@ -1,7 +1,10 @@
-use anyhow::{anyhow, Result};
+use std::str::FromStr;
+
+use anyhow::{anyhow, Error, Result};
 use http::header::{HeaderValue, CONTENT_TYPE, ETAG};
 use http::StatusCode;
 use http_api_problem::HttpApiProblem;
+use mime::{FromStrError, Mime};
 use seahash::hash;
 use serde::Serialize;
 use tracing::{error, instrument, warn};
@@ -84,6 +87,45 @@ impl JsonWithETag {
     }
 }
 
+pub struct BincodeWithETag {
+    body: Vec<u8>,
+    etag: String,
+}
+
+impl Reply for BincodeWithETag {
+    fn into_response(self) -> Response {
+        let mut res = Response::new(self.body.into());
+        res.headers_mut().insert(
+            CONTENT_TYPE,
+            HeaderValue::from_static("application/octet-stream"),
+        );
+        if let Ok(val) = HeaderValue::from_str(&self.etag) {
+            res.headers_mut().insert(ETAG, val);
+        } else {
+            // This should never happen in practice since etag values should only be hex-encoded strings
+            warn!("omitting etag header with invalid ASCII characters")
+        }
+        res
+    }
+}
+
+impl BincodeWithETag {
+    pub fn from_serializable<T: Serialize>(val: &T) -> Result<Self> {
+        let bytes = bincode::serialize(val).map_err(|err| {
+            error!("Failed to serialize database value to bincode: {}", err);
+            anyhow!(HttpApiProblem::with_title_and_type_from_status(
+                StatusCode::INTERNAL_SERVER_ERROR
+            )
+            .set_detail(format!(
+                "Failed to serialize database value to bincode: {}",
+                err
+            )))
+        })?;
+        let etag = format!("{:x}", hash(&bytes));
+        Ok(Self { body: bytes, etag })
+    }
+}
+
 pub fn check_etag(etag: Option<String>, response: CachedResponse) -> CachedResponse {
     if let Some(request_etag) = etag {
         if let Some(response_etag) = response.headers.get("etag") {
@@ -93,4 +135,28 @@ pub fn check_etag(etag: Option<String>, response: CachedResponse) -> CachedRespo
         }
     }
     response
+}
+
+#[derive(Debug, PartialEq)]
+pub struct AcceptHeader {
+    mimes: Vec<Mime>,
+}
+
+impl FromStr for AcceptHeader {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(Self {
+            mimes: s
+                .split(',')
+                .map(|part| part.trim().parse::<Mime>())
+                .collect::<std::result::Result<Vec<Mime>, FromStrError>>()?,
+        })
+    }
+}
+
+impl AcceptHeader {
+    pub fn accepts_bincode(&self) -> bool {
+        self.mimes.contains(&mime::APPLICATION_OCTET_STREAM)
+    }
 }

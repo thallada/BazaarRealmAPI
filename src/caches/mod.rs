@@ -29,6 +29,7 @@ pub struct Caches {
     pub list_transactions_by_shop_id: Cache<(i32, ListParams), CachedResponse>,
     pub interior_ref_list_by_shop_id: Cache<i32, CachedResponse>,
     pub merchandise_list_by_shop_id: Cache<i32, CachedResponse>,
+    pub merchandise_list_by_shop_id_bin: Cache<i32, CachedResponse>,
 }
 
 impl Caches {
@@ -48,6 +49,7 @@ impl Caches {
             list_transactions_by_shop_id: Cache::new("list_transaction_by_shop_id", 100),
             interior_ref_list_by_shop_id: Cache::new("interior_ref_list_by_shop_id", 100),
             merchandise_list_by_shop_id: Cache::new("merchandise_list_by_shop_id", 100),
+            merchandise_list_by_shop_id_bin: Cache::new("merchandise_list_by_shop_id_bin", 100),
         }
     }
 }

@@ -278,6 +278,7 @@ async fn main() -> Result<()> {
             .and(warp::path::end())
             .and(warp::get())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::get_by_shop_id),
     );
