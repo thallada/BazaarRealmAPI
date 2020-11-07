@@ -4,6 +4,7 @@ use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
+use crate::caches::CACHES;
 use crate::models::{InteriorRefList, ListParams};
 use crate::problem::reject_anyhow;
 use crate::Environment;
@@ -11,8 +12,7 @@ use crate::Environment;
 use super::{authenticate, check_etag, JsonWithETag};
 
 pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .interior_ref_list
         .get_response(id, || async {
             let interior_ref_list = InteriorRefList::get(&env.db, id).await?;
@@ -29,8 +29,7 @@ pub async fn get_by_shop_id(
     etag: Option<String>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .interior_ref_list_by_shop_id
         .get_response(shop_id, || async {
             let interior_ref_list = InteriorRefList::get_by_shop_id(&env.db, shop_id).await?;
@@ -47,8 +46,7 @@ pub async fn list(
     etag: Option<String>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .list_interior_ref_lists
         .get_response(list_params.clone(), || async {
             let interior_ref_lists = InteriorRefList::list(&env.db, &list_params).await?;
@@ -80,11 +78,13 @@ pub async fn create(
     let reply = JsonWithETag::from_serializable(&saved_interior_ref_list).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches.list_interior_ref_lists.clear().await;
-    env.caches
-        .interior_ref_list_by_shop_id
-        .delete_response(saved_interior_ref_list.shop_id)
-        .await;
+    tokio::spawn(async move {
+        CACHES.list_interior_ref_lists.clear().await;
+        CACHES
+            .interior_ref_list_by_shop_id
+            .delete_response(saved_interior_ref_list.shop_id)
+            .await;
+    });
     Ok(reply)
 }
 
@@ -118,12 +118,14 @@ pub async fn update(
         JsonWithETag::from_serializable(&updated_interior_ref_list).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches.interior_ref_list.delete_response(id).await;
-    env.caches
-        .interior_ref_list_by_shop_id
-        .delete_response(updated_interior_ref_list.shop_id)
-        .await;
-    env.caches.list_interior_ref_lists.clear().await;
+    tokio::spawn(async move {
+        CACHES.interior_ref_list.delete_response(id).await;
+        CACHES
+            .interior_ref_list_by_shop_id
+            .delete_response(updated_interior_ref_list.shop_id)
+            .await;
+        CACHES.list_interior_ref_lists.clear().await;
+    });
     Ok(reply)
 }
 
@@ -149,19 +151,21 @@ pub async fn update_by_shop_id(
         JsonWithETag::from_serializable(&updated_interior_ref_list).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches
-        .interior_ref_list
-        .delete_response(
-            updated_interior_ref_list
-                .id
-                .expect("saved interior_ref_list has no id"),
-        )
-        .await;
-    env.caches
-        .interior_ref_list_by_shop_id
-        .delete_response(updated_interior_ref_list.shop_id)
-        .await;
-    env.caches.list_interior_ref_lists.clear().await;
+    tokio::spawn(async move {
+        CACHES
+            .interior_ref_list
+            .delete_response(
+                updated_interior_ref_list
+                    .id
+                    .expect("saved interior_ref_list has no id"),
+            )
+            .await;
+        CACHES
+            .interior_ref_list_by_shop_id
+            .delete_response(updated_interior_ref_list.shop_id)
+            .await;
+        CACHES.list_interior_ref_lists.clear().await;
+    });
     Ok(reply)
 }
 
@@ -177,11 +181,13 @@ pub async fn delete(
     InteriorRefList::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
-    env.caches.interior_ref_list.delete_response(id).await;
-    env.caches.list_interior_ref_lists.clear().await;
-    env.caches
-        .interior_ref_list_by_shop_id
-        .delete_response(interior_ref_list.shop_id)
-        .await;
+    tokio::spawn(async move {
+        CACHES.interior_ref_list.delete_response(id).await;
+        CACHES.list_interior_ref_lists.clear().await;
+        CACHES
+            .interior_ref_list_by_shop_id
+            .delete_response(interior_ref_list.shop_id)
+            .await;
+    });
     Ok(StatusCode::NO_CONTENT)
 }

@@ -4,6 +4,7 @@ use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
+use crate::caches::CACHES;
 use crate::models::{ListParams, MerchandiseList, Transaction};
 use crate::problem::reject_anyhow;
 use crate::Environment;
@@ -11,8 +12,7 @@ use crate::Environment;
 use super::{authenticate, check_etag, JsonWithETag};
 
 pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .transaction
         .get_response(id, || async {
             let transaction = Transaction::get(&env.db, id).await?;
@@ -29,8 +29,7 @@ pub async fn list(
     etag: Option<String>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .list_transactions
         .get_response(list_params.clone(), || async {
             let transactions = Transaction::list(&env.db, &list_params).await?;
@@ -48,8 +47,7 @@ pub async fn list_by_shop_id(
     etag: Option<String>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .list_transactions_by_shop_id
         .get_response((shop_id, list_params.clone()), || async {
             let transactions = Transaction::list_by_shop_id(&env.db, shop_id, &list_params).await?;
@@ -104,22 +102,24 @@ pub async fn create(
     let reply = JsonWithETag::from_serializable(&saved_transaction).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    // TODO: will this make these caches effectively useless?
-    env.caches.list_transactions.clear().await;
-    env.caches.list_transactions_by_shop_id.clear().await;
-    env.caches
-        .merchandise_list
-        .delete_response(
-            updated_merchandise_list
-                .id
-                .expect("saved merchandise_list has no id"),
-        )
-        .await;
-    env.caches
-        .merchandise_list_by_shop_id
-        .delete_response(updated_merchandise_list.shop_id)
-        .await;
-    env.caches.list_merchandise_lists.clear().await;
+    tokio::spawn(async move {
+        // TODO: will this make these caches effectively useless?
+        CACHES.list_transactions.clear().await;
+        CACHES.list_transactions_by_shop_id.clear().await;
+        CACHES
+            .merchandise_list
+            .delete_response(
+                updated_merchandise_list
+                    .id
+                    .expect("saved merchandise_list has no id"),
+            )
+            .await;
+        CACHES
+            .merchandise_list_by_shop_id
+            .delete_response(updated_merchandise_list.shop_id)
+            .await;
+        CACHES.list_merchandise_lists.clear().await;
+    });
     Ok(reply)
 }
 
@@ -132,8 +132,10 @@ pub async fn delete(
     Transaction::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
-    env.caches.transaction.delete_response(id).await;
-    env.caches.list_transactions.clear().await;
-    env.caches.list_transactions_by_shop_id.clear().await;
+    tokio::spawn(async move {
+        CACHES.transaction.delete_response(id).await;
+        CACHES.list_transactions.clear().await;
+        CACHES.list_transactions_by_shop_id.clear().await;
+    });
     Ok(StatusCode::NO_CONTENT)
 }

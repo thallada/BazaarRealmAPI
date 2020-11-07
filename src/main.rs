@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use anyhow::Result;
 use dotenv::dotenv;
 use http::StatusCode;
@@ -18,13 +21,11 @@ mod macros;
 mod models;
 mod problem;
 
-use caches::Caches;
 use models::{InteriorRefList, ListParams, MerchandiseList, Owner, Shop, Transaction};
 
 #[derive(Debug, Clone)]
 pub struct Environment {
     pub db: PgPool,
-    pub caches: Caches,
     pub api_url: Url,
 }
 
@@ -35,7 +36,6 @@ impl Environment {
                 .max_size(5)
                 .build(&env::var("DATABASE_URL")?)
                 .await?,
-            caches: Caches::initialize(),
             api_url,
         })
     }

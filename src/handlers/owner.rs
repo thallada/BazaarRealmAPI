@@ -6,6 +6,7 @@ use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
+use crate::caches::CACHES;
 use crate::models::{ListParams, Owner};
 use crate::problem::{reject_anyhow, unauthorized_no_api_key};
 use crate::Environment;
@@ -13,8 +14,7 @@ use crate::Environment;
 use super::{authenticate, check_etag, JsonWithETag};
 
 pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .owner
         .get_response(id, || async {
             let owner = Owner::get(&env.db, id).await?;
@@ -31,8 +31,7 @@ pub async fn list(
     etag: Option<String>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .list_owners
         .get_response(list_params.clone(), || async {
             let owners = Owner::list(&env.db, &list_params).await?;
@@ -72,7 +71,9 @@ pub async fn create(
         let reply = JsonWithETag::from_serializable(&saved_owner).map_err(reject_anyhow)?;
         let reply = with_header(reply, "Location", url.as_str());
         let reply = with_status(reply, StatusCode::CREATED);
-        env.caches.list_owners.clear().await;
+        tokio::spawn(async move {
+            CACHES.list_owners.clear().await;
+        });
         Ok(reply)
     } else {
         Err(reject_anyhow(unauthorized_no_api_key()))
@@ -98,8 +99,10 @@ pub async fn update(
     let reply = JsonWithETag::from_serializable(&updated_owner).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches.owner.delete_response(id).await;
-    env.caches.list_owners.clear().await;
+    tokio::spawn(async move {
+        CACHES.owner.delete_response(id).await;
+        CACHES.list_owners.clear().await;
+    });
     Ok(reply)
 }
 
@@ -112,11 +115,13 @@ pub async fn delete(
     Owner::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
-    env.caches.owner.delete_response(id).await;
-    env.caches
-        .owner_ids_by_api_key
-        .delete(api_key.expect("api-key has been validated during authenticate"))
-        .await;
-    env.caches.list_owners.clear().await;
+    tokio::spawn(async move {
+        CACHES.owner.delete_response(id).await;
+        CACHES
+            .owner_ids_by_api_key
+            .delete(api_key.expect("api-key has been validated during authenticate"))
+            .await;
+        CACHES.list_owners.clear().await;
+    });
     Ok(StatusCode::NO_CONTENT)
 }

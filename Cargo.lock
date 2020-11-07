@@ -142,6 +142,7 @@ dependencies = [
  "http-api-problem",
  "hyper",
  "ipnetwork",
+ "lazy_static",
  "listenfd",
  "lru",
  "seahash",

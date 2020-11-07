@@ -9,6 +9,10 @@ mod cached_response;
 pub use cache::Cache;
 pub use cached_response::CachedResponse;
 
+lazy_static! {
+    pub static ref CACHES: Caches = Caches::initialize();
+}
+
 #[derive(Debug, Clone)]
 pub struct Caches {
     pub owner_ids_by_api_key: Cache<Uuid, i32>,

@@ -24,8 +24,8 @@ where
 
 impl<K, V> Cache<K, V>
 where
-    K: Eq + Hash + Debug,
-    V: Clone,
+    K: Eq + Hash + Debug + Send,
+    V: Clone + Send,
 {
     pub fn new(name: &str, capacity: usize) -> Self {
         Cache {
@@ -48,7 +48,7 @@ where
         }
     }
 
-    pub async fn get<G, F>(&self, key: K, getter: G) -> Result<V>
+    pub async fn get<G, F>(&'static self, key: K, getter: G) -> Result<V>
     where
         G: Fn() -> F,
         F: Future<Output = Result<V>>,
@@ -62,8 +62,13 @@ where
 
         self.log_with_key(&key, "get: miss");
         let value = getter().await?;
-        let mut guard = self.lru_mutex.lock().await;
-        guard.put(key, value.clone());
+
+        let to_cache = value.clone();
+        tokio::spawn(async move {
+            let mut guard = self.lru_mutex.lock().await;
+            self.log_with_key(&key, "get: update cache");
+            guard.put(key, to_cache);
+        });
 
         Ok(value)
     }
@@ -85,10 +90,10 @@ where
 
 impl<K> Cache<K, CachedResponse>
 where
-    K: Eq + Hash + Debug,
+    K: Eq + Hash + Debug + Send,
 {
     pub async fn get_response<G, F, R>(
-        &self,
+        &'static self,
         key: K,
         getter: G,
     ) -> Result<CachedResponse, Rejection>
@@ -111,8 +116,12 @@ where
                 let cached_response = CachedResponse::from_reply(reply)
                     .await
                     .map_err(reject_anyhow)?;
-                let mut guard = self.lru_mutex.lock().await;
-                guard.put(key, cached_response.clone());
+                let to_cache = cached_response.clone();
+                tokio::spawn(async move {
+                    let mut guard = self.lru_mutex.lock().await;
+                    self.log_with_key(&key, "get_response: update cache");
+                    guard.put(key, to_cache);
+                });
                 cached_response
             }
             Err(rejection) => {

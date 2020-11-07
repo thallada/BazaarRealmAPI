@@ -5,6 +5,7 @@ use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
+use crate::caches::CACHES;
 use crate::models::{InteriorRefList, ListParams, MerchandiseList, Shop};
 use crate::problem::reject_anyhow;
 use crate::Environment;
@@ -12,8 +13,7 @@ use crate::Environment;
 use super::{authenticate, check_etag, JsonWithETag};
 
 pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .shop
         .get_response(id, || async {
             let shop = Shop::get(&env.db, id).await?;
@@ -30,8 +30,7 @@ pub async fn list(
     etag: Option<String>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let response = env
-        .caches
+    let response = CACHES
         .list_shops
         .get_response(list_params.clone(), || async {
             let shops = Shop::list(&env.db, &list_params).await?;
@@ -90,7 +89,9 @@ pub async fn create(
     let reply = JsonWithETag::from_serializable(&saved_shop).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches.list_shops.clear().await;
+    tokio::spawn(async move {
+        CACHES.list_shops.clear().await;
+    });
     Ok(reply)
 }
 
@@ -122,8 +123,10 @@ pub async fn update(
     let reply = JsonWithETag::from_serializable(&updated_shop).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
-    env.caches.shop.delete_response(id).await;
-    env.caches.list_shops.clear().await;
+    tokio::spawn(async move {
+        CACHES.shop.delete_response(id).await;
+        CACHES.list_shops.clear().await;
+    });
     Ok(reply)
 }
 
@@ -136,15 +139,14 @@ pub async fn delete(
     Shop::delete(&env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
-    env.caches.shop.delete_response(id).await;
-    env.caches.list_shops.clear().await;
-    env.caches
-        .interior_ref_list_by_shop_id
-        .delete_response(id)
-        .await;
-    env.caches
-        .merchandise_list_by_shop_id
-        .delete_response(id)
-        .await;
+    tokio::spawn(async move {
+        CACHES.shop.delete_response(id).await;
+        CACHES.list_shops.clear().await;
+        CACHES
+            .interior_ref_list_by_shop_id
+            .delete_response(id)
+            .await;
+        CACHES.merchandise_list_by_shop_id.delete_response(id).await;
+    });
     Ok(StatusCode::NO_CONTENT)
 }

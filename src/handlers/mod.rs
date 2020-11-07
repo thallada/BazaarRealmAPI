@@ -15,14 +15,14 @@ pub mod owner;
 pub mod shop;
 pub mod transaction;
 
-use super::caches::CachedResponse;
+use super::caches::{CachedResponse, CACHES};
 use super::problem::{unauthorized_no_api_key, unauthorized_no_owner};
 use super::Environment;
 
 #[instrument(level = "debug", skip(env, api_key))]
 pub async fn authenticate(env: &Environment, api_key: Option<Uuid>) -> Result<i32> {
     if let Some(api_key) = api_key {
-        env.caches
+        CACHES
             .owner_ids_by_api_key
             .get(api_key, || async {
                 Ok(

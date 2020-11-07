@@ -12,6 +12,7 @@ chrono = { version = "0.4", features = ["serde"] }
 dotenv = "0.15"
 http-api-problem = { version = "0.17", features = ["with-warp"] }
 hyper = "0.13"
+lazy_static = "1.4"
 listenfd = "0.3"
 tokio = { version = "0.2", features = ["macros", "rt-threaded", "sync"] }
 sqlx = { version = "0.3", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono", "uuid", "ipnetwork", "json" ] }
