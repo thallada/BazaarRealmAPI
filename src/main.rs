@@ -166,6 +166,7 @@ async fn main() -> Result<()> {
             .and(warp::path::end())
             .and(warp::get())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::get),
     );
@@ -174,6 +175,7 @@ async fn main() -> Result<()> {
             .and(warp::post())
             .and(json_body::<InteriorRefList>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::create),
     );
@@ -191,6 +193,7 @@ async fn main() -> Result<()> {
             .and(warp::patch())
             .and(json_body::<InteriorRefList>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::update),
     );
@@ -201,6 +204,7 @@ async fn main() -> Result<()> {
             .and(warp::patch())
             .and(json_body::<InteriorRefList>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::update_by_shop_id),
     );
@@ -209,6 +213,7 @@ async fn main() -> Result<()> {
             .and(warp::get())
             .and(warp::query::<ListParams>())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::list),
     );
@@ -218,6 +223,7 @@ async fn main() -> Result<()> {
             .and(warp::path::end())
             .and(warp::get())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::interior_ref_list::get_by_shop_id),
     );
@@ -226,6 +232,7 @@ async fn main() -> Result<()> {
             .and(warp::path::end())
             .and(warp::get())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::get),
     );
@@ -234,6 +241,7 @@ async fn main() -> Result<()> {
             .and(warp::post())
             .and(json_body::<MerchandiseList>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::create),
     );
@@ -251,6 +259,7 @@ async fn main() -> Result<()> {
             .and(warp::patch())
             .and(json_body::<MerchandiseList>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::update),
     );
@@ -261,6 +270,7 @@ async fn main() -> Result<()> {
             .and(warp::patch())
             .and(json_body::<MerchandiseList>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::update_by_shop_id),
     );
@@ -269,6 +279,7 @@ async fn main() -> Result<()> {
             .and(warp::get())
             .and(warp::query::<ListParams>())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::merchandise_list::list),
     );

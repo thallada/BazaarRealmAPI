@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use std::str::FromStr;
 
 use anyhow::{anyhow, Error, Result};
@@ -50,12 +51,20 @@ pub async fn authenticate(env: &Environment, api_key: Option<Uuid>) -> Result<i3
 // Similar to `warp::reply::Json`, but stores hash of body content for the ETag header created in `into_response`.
 // Also, it does not store a serialize `Result`. Instead it returns the error to the caller immediately in `from_serializable`.
 // It's purpose is to avoid serializing the body content twice and to encapsulate ETag logic in one place.
-pub struct JsonWithETag {
+pub struct ETagReply<T> {
     body: Vec<u8>,
     etag: String,
+    content_type: PhantomData<T>,
 }
 
-impl Reply for JsonWithETag {
+pub trait DataReply: Reply + Sized {
+    fn from_serializable<T: Serialize>(val: &T) -> Result<Self>;
+}
+
+pub struct Json {}
+pub struct Bincode {}
+
+impl Reply for ETagReply<Json> {
     fn into_response(self) -> Response {
         let mut res = Response::new(self.body.into());
         res.headers_mut()
@@ -70,8 +79,8 @@ impl Reply for JsonWithETag {
     }
 }
 
-impl JsonWithETag {
-    pub fn from_serializable<T: Serialize>(val: &T) -> Result<Self> {
+impl DataReply for ETagReply<Json> {
+    fn from_serializable<T: Serialize>(val: &T) -> Result<Self> {
         let bytes = serde_json::to_vec(val).map_err(|err| {
             error!("Failed to serialize database value to JSON: {}", err);
             anyhow!(HttpApiProblem::with_title_and_type_from_status(
@@ -83,16 +92,15 @@ impl JsonWithETag {
             )))
         })?;
         let etag = format!("{:x}", hash(&bytes));
-        Ok(Self { body: bytes, etag })
+        Ok(Self {
+            body: bytes,
+            etag,
+            content_type: PhantomData,
+        })
     }
 }
 
-pub struct BincodeWithETag {
-    body: Vec<u8>,
-    etag: String,
-}
-
-impl Reply for BincodeWithETag {
+impl Reply for ETagReply<Bincode> {
     fn into_response(self) -> Response {
         let mut res = Response::new(self.body.into());
         res.headers_mut().insert(
@@ -109,8 +117,8 @@ impl Reply for BincodeWithETag {
     }
 }
 
-impl BincodeWithETag {
-    pub fn from_serializable<T: Serialize>(val: &T) -> Result<Self> {
+impl DataReply for ETagReply<Bincode> {
+    fn from_serializable<T: Serialize>(val: &T) -> Result<Self> {
         let bytes = bincode::serialize(val).map_err(|err| {
             error!("Failed to serialize database value to bincode: {}", err);
             anyhow!(HttpApiProblem::with_title_and_type_from_status(
@@ -122,7 +130,11 @@ impl BincodeWithETag {
             )))
         })?;
         let etag = format!("{:x}", hash(&bytes));
-        Ok(Self { body: bytes, etag })
+        Ok(Self {
+            body: bytes,
+            etag,
+            content_type: PhantomData,
+        })
     }
 }
 

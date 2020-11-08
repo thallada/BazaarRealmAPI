@@ -9,14 +9,14 @@ use crate::models::{ListParams, MerchandiseList, Transaction};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
-use super::{authenticate, check_etag, JsonWithETag};
+use super::{authenticate, check_etag, DataReply, ETagReply, Json};
 
 pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
     let response = CACHES
         .transaction
         .get_response(id, || async {
             let transaction = Transaction::get(&env.db, id).await?;
-            let reply = JsonWithETag::from_serializable(&transaction)?;
+            let reply = ETagReply::<Json>::from_serializable(&transaction)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
@@ -33,7 +33,7 @@ pub async fn list(
         .list_transactions
         .get_response(list_params.clone(), || async {
             let transactions = Transaction::list(&env.db, &list_params).await?;
-            let reply = JsonWithETag::from_serializable(&transactions)?;
+            let reply = ETagReply::<Json>::from_serializable(&transactions)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
@@ -51,7 +51,7 @@ pub async fn list_by_shop_id(
         .list_transactions_by_shop_id
         .get_response((shop_id, list_params.clone()), || async {
             let transactions = Transaction::list_by_shop_id(&env.db, shop_id, &list_params).await?;
-            let reply = JsonWithETag::from_serializable(&transactions)?;
+            let reply = ETagReply::<Json>::from_serializable(&transactions)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
@@ -99,7 +99,7 @@ pub async fn create(
         .await
         .map_err(|error| reject_anyhow(anyhow!(error)))?;
     let url = saved_transaction.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = JsonWithETag::from_serializable(&saved_transaction).map_err(reject_anyhow)?;
+    let reply = ETagReply::<Json>::from_serializable(&saved_transaction).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     tokio::spawn(async move {

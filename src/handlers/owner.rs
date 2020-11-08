@@ -11,14 +11,14 @@ use crate::models::{ListParams, Owner};
 use crate::problem::{reject_anyhow, unauthorized_no_api_key};
 use crate::Environment;
 
-use super::{authenticate, check_etag, JsonWithETag};
+use super::{authenticate, check_etag, DataReply, ETagReply, Json};
 
 pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
     let response = CACHES
         .owner
         .get_response(id, || async {
             let owner = Owner::get(&env.db, id).await?;
-            let reply = JsonWithETag::from_serializable(&owner)?;
+            let reply = ETagReply::<Json>::from_serializable(&owner)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
@@ -35,7 +35,7 @@ pub async fn list(
         .list_owners
         .get_response(list_params.clone(), || async {
             let owners = Owner::list(&env.db, &list_params).await?;
-            let reply = JsonWithETag::from_serializable(&owners)?;
+            let reply = ETagReply::<Json>::from_serializable(&owners)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
@@ -68,7 +68,7 @@ pub async fn create(
             .await
             .map_err(reject_anyhow)?;
         let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
-        let reply = JsonWithETag::from_serializable(&saved_owner).map_err(reject_anyhow)?;
+        let reply = ETagReply::<Json>::from_serializable(&saved_owner).map_err(reject_anyhow)?;
         let reply = with_header(reply, "Location", url.as_str());
         let reply = with_status(reply, StatusCode::CREATED);
         tokio::spawn(async move {
@@ -96,7 +96,7 @@ pub async fn update(
         .await
         .map_err(reject_anyhow)?;
     let url = updated_owner.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = JsonWithETag::from_serializable(&updated_owner).map_err(reject_anyhow)?;
+    let reply = ETagReply::<Json>::from_serializable(&updated_owner).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     tokio::spawn(async move {

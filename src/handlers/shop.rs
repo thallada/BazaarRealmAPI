@@ -1,6 +1,5 @@
 use anyhow::Result;
 use http::StatusCode;
-use sqlx::types::Json;
 use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
@@ -10,14 +9,14 @@ use crate::models::{InteriorRefList, ListParams, MerchandiseList, Shop};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
-use super::{authenticate, check_etag, JsonWithETag};
+use super::{authenticate, check_etag, DataReply, ETagReply, Json};
 
 pub async fn get(id: i32, etag: Option<String>, env: Environment) -> Result<impl Reply, Rejection> {
     let response = CACHES
         .shop
         .get_response(id, || async {
             let shop = Shop::get(&env.db, id).await?;
-            let reply = JsonWithETag::from_serializable(&shop)?;
+            let reply = ETagReply::<Json>::from_serializable(&shop)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
@@ -34,7 +33,7 @@ pub async fn list(
         .list_shops
         .get_response(list_params.clone(), || async {
             let shops = Shop::list(&env.db, &list_params).await?;
-            let reply = JsonWithETag::from_serializable(&shops)?;
+            let reply = ETagReply::<Json>::from_serializable(&shops)?;
             let reply = with_status(reply, StatusCode::OK);
             Ok(reply)
         })
@@ -63,7 +62,7 @@ pub async fn create(
             id: None,
             shop_id,
             owner_id: Some(owner_id),
-            ref_list: Json::default(),
+            ref_list: sqlx::types::Json::default(),
             created_at: None,
             updated_at: None,
         };
@@ -75,7 +74,7 @@ pub async fn create(
             id: None,
             shop_id,
             owner_id: Some(owner_id),
-            form_list: Json::default(),
+            form_list: sqlx::types::Json::default(),
             created_at: None,
             updated_at: None,
         };
@@ -86,7 +85,7 @@ pub async fn create(
     }
 
     let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = JsonWithETag::from_serializable(&saved_shop).map_err(reject_anyhow)?;
+    let reply = ETagReply::<Json>::from_serializable(&saved_shop).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     tokio::spawn(async move {
@@ -120,7 +119,7 @@ pub async fn update(
         .await
         .map_err(reject_anyhow)?;
     let url = updated_shop.url(&env.api_url).map_err(reject_anyhow)?;
-    let reply = JsonWithETag::from_serializable(&updated_shop).map_err(reject_anyhow)?;
+    let reply = ETagReply::<Json>::from_serializable(&updated_shop).map_err(reject_anyhow)?;
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     tokio::spawn(async move {
