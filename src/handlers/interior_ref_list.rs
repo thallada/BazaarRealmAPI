@@ -289,11 +289,17 @@ pub async fn delete(
         .map_err(reject_anyhow)?;
     tokio::spawn(async move {
         CACHES.interior_ref_list.delete_response(id).await;
-        CACHES.list_interior_ref_lists.clear().await;
+        CACHES.interior_ref_list_bin.delete_response(id).await;
         CACHES
             .interior_ref_list_by_shop_id
             .delete_response(interior_ref_list.shop_id)
             .await;
+        CACHES
+            .interior_ref_list_by_shop_id_bin
+            .delete_response(interior_ref_list.shop_id)
+            .await;
+        CACHES.list_interior_ref_lists.clear().await;
+        CACHES.list_interior_ref_lists_bin.clear().await;
     });
     Ok(StatusCode::NO_CONTENT)
 }

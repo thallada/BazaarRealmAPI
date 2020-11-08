@@ -82,6 +82,7 @@ async fn main() -> Result<()> {
             .and(warp::path::end())
             .and(warp::get())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::owner::get),
     );
@@ -92,6 +93,7 @@ async fn main() -> Result<()> {
             .and(warp::addr::remote())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("x-real-ip"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::owner::create),
     );
@@ -109,6 +111,7 @@ async fn main() -> Result<()> {
             .and(warp::patch())
             .and(json_body::<Owner>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::owner::update),
     );
@@ -117,6 +120,7 @@ async fn main() -> Result<()> {
             .and(warp::get())
             .and(warp::query::<ListParams>())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::owner::list),
     );
@@ -125,6 +129,7 @@ async fn main() -> Result<()> {
             .and(warp::path::end())
             .and(warp::get())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::shop::get),
     );
@@ -133,6 +138,7 @@ async fn main() -> Result<()> {
             .and(warp::post())
             .and(json_body::<Shop>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::shop::create),
     );
@@ -150,6 +156,7 @@ async fn main() -> Result<()> {
             .and(warp::patch())
             .and(json_body::<Shop>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::shop::update),
     );
@@ -158,6 +165,7 @@ async fn main() -> Result<()> {
             .and(warp::get())
             .and(warp::query::<ListParams>())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::shop::list),
     );
@@ -298,6 +306,7 @@ async fn main() -> Result<()> {
             .and(warp::path::end())
             .and(warp::get())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::transaction::get),
     );
@@ -306,6 +315,7 @@ async fn main() -> Result<()> {
             .and(warp::post())
             .and(json_body::<Transaction>())
             .and(warp::header::optional("api-key"))
+            .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
             .and_then(handlers::transaction::create),
     );
@@ -322,6 +332,7 @@ async fn main() -> Result<()> {
             .and(warp::get())
             .and(warp::query::<ListParams>())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::transaction::list),
     );
@@ -332,6 +343,7 @@ async fn main() -> Result<()> {
             .and(warp::get())
             .and(warp::query::<ListParams>())
             .and(warp::header::optional("if-none-match"))
+            .and(warp::header::optional("accept"))
             .and(with_env(env.clone()))
             .and_then(handlers::transaction::list_by_shop_id),
     );
