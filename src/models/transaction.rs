@@ -1,8 +1,7 @@
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
-use sqlx::pool::PoolConnection;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{Done, Executor, Postgres};
 use tracing::instrument;
 use url::Url;
 
@@ -11,7 +10,39 @@ use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Transaction {
-    pub id: Option<i32>,
+    pub id: i32,
+    pub shop_id: i32,
+    pub owner_id: i32,
+    pub mod_name: String,
+    pub local_form_id: i32,
+    pub name: String,
+    pub form_type: i32,
+    pub is_food: bool,
+    pub price: i32,
+    pub is_sell: bool,
+    pub quantity: i32,
+    pub amount: i32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UnsavedTransaction {
+    pub shop_id: i32,
+    pub owner_id: i32,
+    pub mod_name: String,
+    pub local_form_id: i32,
+    pub name: String,
+    pub form_type: i32,
+    pub is_food: bool,
+    pub price: i32,
+    pub is_sell: bool,
+    pub quantity: i32,
+    pub amount: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PostedTransaction {
     pub shop_id: i32,
     pub owner_id: Option<i32>,
     pub mod_name: String,
@@ -23,8 +54,6 @@ pub struct Transaction {
     pub is_sell: bool,
     pub quantity: i32,
     pub amount: i32,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
 }
 
 impl Transaction {
@@ -32,23 +61,16 @@ impl Transaction {
         "transaction"
     }
 
-    pub fn pk(&self) -> Option<i32> {
+    pub fn pk(&self) -> i32 {
         self.id
     }
 
     pub fn url(&self, api_url: &Url) -> Result<Url> {
-        if let Some(pk) = self.pk() {
-            Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), pk))?)
-        } else {
-            Err(anyhow!(
-                "Cannot get URL for {} with no primary key",
-                Self::resource_name()
-            ))
-        }
+        Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), self.pk()))?)
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
+    pub async fn get(db: impl Executor<'_, Database = Postgres>, id: i32) -> Result<Self> {
         sqlx::query_as!(Self, "SELECT * FROM transactions WHERE id = $1", id)
             .fetch_one(db)
             .await
@@ -57,8 +79,8 @@ impl Transaction {
 
     #[instrument(level = "debug", skip(db))]
     pub async fn create(
-        self,
-        db: &mut sqlx::Transaction<PoolConnection<PgConnection>>,
+        transaction: UnsavedTransaction,
+        db: impl Executor<'_, Database = Postgres>,
     ) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
@@ -67,38 +89,46 @@ impl Transaction {
              is_sell, quantity, amount, created_at, updated_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now(), now())
             RETURNING *",
-            self.shop_id,
-            self.owner_id,
-            self.mod_name,
-            self.local_form_id,
-            self.name,
-            self.form_type,
-            self.is_food,
-            self.price,
-            self.is_sell,
-            self.quantity,
-            self.amount,
+            transaction.shop_id,
+            transaction.owner_id,
+            transaction.mod_name,
+            transaction.local_form_id,
+            transaction.name,
+            transaction.form_type,
+            transaction.is_food,
+            transaction.price,
+            transaction.is_sell,
+            transaction.quantity,
+            transaction.amount,
         )
         .fetch_one(db)
         .await?)
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+    pub async fn delete(
+        db: impl Executor<'_, Database = Postgres> + Copy,
+        owner_id: i32,
+        id: i32,
+    ) -> Result<u64> {
         let transaction = sqlx::query!("SELECT owner_id FROM transactions WHERE id = $1", id)
             .fetch_one(db)
             .await?;
         if transaction.owner_id == owner_id {
             return Ok(sqlx::query!("DELETE FROM transactions WHERE id = $1", id)
                 .execute(db)
-                .await?);
+                .await?
+                .rows_affected());
         } else {
             return Err(forbidden_permission());
         }
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
+    pub async fn list(
+        db: impl Executor<'_, Database = Postgres>,
+        list_params: &ListParams,
+    ) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
                 Self,
@@ -129,7 +159,7 @@ impl Transaction {
 
     #[instrument(level = "debug", skip(db))]
     pub async fn list_by_shop_id(
-        db: &PgPool,
+        db: impl Executor<'_, Database = Postgres>,
         shop_id: i32,
         list_params: &ListParams,
     ) -> Result<Vec<Self>> {

@@ -6,7 +6,7 @@ use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
 use crate::caches::CACHES;
-use crate::models::{ListParams, MerchandiseList};
+use crate::models::{ListParams, MerchandiseList, PostedMerchandiseList, UnsavedMerchandiseList};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
@@ -105,7 +105,7 @@ pub async fn list(
 }
 
 pub async fn create(
-    merchandise_list: MerchandiseList,
+    merchandise_list: PostedMerchandiseList,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
@@ -117,12 +117,12 @@ pub async fn create(
         _ => ContentType::Json,
     };
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let ref_list_with_owner_id = MerchandiseList {
-        owner_id: Some(owner_id),
-        ..merchandise_list
+    let unsaved_merchandise_list = UnsavedMerchandiseList {
+        owner_id,
+        shop_id: merchandise_list.shop_id,
+        form_list: merchandise_list.form_list,
     };
-    let saved_merchandise_list = ref_list_with_owner_id
-        .create(&env.db)
+    let saved_merchandise_list = MerchandiseList::create(unsaved_merchandise_list, &env.db)
         .await
         .map_err(reject_anyhow)?;
     let url = saved_merchandise_list
@@ -156,7 +156,7 @@ pub async fn create(
 
 pub async fn update(
     id: i32,
-    merchandise_list: MerchandiseList,
+    merchandise_list: PostedMerchandiseList,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
@@ -168,20 +168,7 @@ pub async fn update(
         _ => ContentType::Json,
     };
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let merchandise_list_with_id_and_owner_id = if merchandise_list.owner_id.is_some() {
-        MerchandiseList {
-            id: Some(id),
-            ..merchandise_list
-        }
-    } else {
-        MerchandiseList {
-            id: Some(id),
-            owner_id: Some(owner_id),
-            ..merchandise_list
-        }
-    };
-    let updated_merchandise_list = merchandise_list_with_id_and_owner_id
-        .update(&env.db, owner_id, id)
+    let updated_merchandise_list = MerchandiseList::update(merchandise_list, &env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
     let url = updated_merchandise_list
@@ -218,7 +205,7 @@ pub async fn update(
 
 pub async fn update_by_shop_id(
     shop_id: i32,
-    merchandise_list: MerchandiseList,
+    merchandise_list: PostedMerchandiseList,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
@@ -230,14 +217,10 @@ pub async fn update_by_shop_id(
         _ => ContentType::Json,
     };
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let merchandise_list_with_owner_id = MerchandiseList {
-        owner_id: Some(owner_id),
-        ..merchandise_list
-    };
-    let updated_merchandise_list = merchandise_list_with_owner_id
-        .update_by_shop_id(&env.db, owner_id, shop_id)
-        .await
-        .map_err(reject_anyhow)?;
+    let updated_merchandise_list =
+        MerchandiseList::update_by_shop_id(merchandise_list, &env.db, owner_id, shop_id)
+            .await
+            .map_err(reject_anyhow)?;
     let url = updated_merchandise_list
         .url(&env.api_url)
         .map_err(reject_anyhow)?;
@@ -254,11 +237,14 @@ pub async fn update_by_shop_id(
     let reply = with_header(reply, "Location", url.as_str());
     let reply = with_status(reply, StatusCode::CREATED);
     tokio::spawn(async move {
-        let id = updated_merchandise_list
-            .id
-            .expect("saved merchandise_list has no id");
-        CACHES.merchandise_list.delete_response(id).await;
-        CACHES.merchandise_list_bin.delete_response(id).await;
+        CACHES
+            .merchandise_list
+            .delete_response(updated_merchandise_list.id)
+            .await;
+        CACHES
+            .merchandise_list_bin
+            .delete_response(updated_merchandise_list.id)
+            .await;
         CACHES
             .merchandise_list_by_shop_id
             .delete_response(updated_merchandise_list.shop_id)

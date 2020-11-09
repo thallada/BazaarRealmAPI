@@ -6,7 +6,9 @@ use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
 use crate::caches::CACHES;
-use crate::models::{ListParams, MerchandiseList, Transaction};
+use crate::models::{
+    ListParams, MerchandiseList, PostedTransaction, Transaction, UnsavedTransaction,
+};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
@@ -99,7 +101,7 @@ pub async fn list_by_shop_id(
 }
 
 pub async fn create(
-    transaction: Transaction,
+    transaction: PostedTransaction,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
@@ -111,17 +113,25 @@ pub async fn create(
         _ => ContentType::Json,
     };
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let transaction_with_owner_id = Transaction {
-        owner_id: Some(owner_id),
-        ..transaction
+    let unsaved_transaction = UnsavedTransaction {
+        shop_id: transaction.shop_id,
+        owner_id,
+        mod_name: transaction.mod_name,
+        local_form_id: transaction.local_form_id,
+        name: transaction.name,
+        form_type: transaction.form_type,
+        is_food: transaction.is_food,
+        price: transaction.price,
+        is_sell: transaction.is_sell,
+        quantity: transaction.quantity,
+        amount: transaction.amount,
     };
     let mut tx = env
         .db
         .begin()
         .await
         .map_err(|error| reject_anyhow(anyhow!(error)))?;
-    let saved_transaction = transaction_with_owner_id
-        .create(&mut tx)
+    let saved_transaction = Transaction::create(unsaved_transaction, &mut tx)
         .await
         .map_err(reject_anyhow)?;
     let quantity_delta = match transaction.is_sell {
@@ -157,11 +167,14 @@ pub async fn create(
     let reply = with_status(reply, StatusCode::CREATED);
     tokio::spawn(async move {
         // TODO: will this make these caches effectively useless?
-        let merch_id = updated_merchandise_list
-            .id
-            .expect("saved merchandise_list has no id");
-        CACHES.merchandise_list.delete_response(merch_id).await;
-        CACHES.merchandise_list_bin.delete_response(merch_id).await;
+        CACHES
+            .merchandise_list
+            .delete_response(updated_merchandise_list.id)
+            .await;
+        CACHES
+            .merchandise_list_bin
+            .delete_response(updated_merchandise_list.id)
+            .await;
         CACHES
             .merchandise_list_by_shop_id
             .delete_response(updated_merchandise_list.shop_id)

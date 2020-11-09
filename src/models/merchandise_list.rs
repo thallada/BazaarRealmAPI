@@ -4,19 +4,13 @@ use http::StatusCode;
 use http_api_problem::HttpApiProblem;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sqlx::pool::PoolConnection;
 use sqlx::types::Json;
-use sqlx::{PgConnection, PgPool, Transaction};
+use sqlx::{Done, Executor, Postgres};
 use tracing::instrument;
 use url::Url;
 
 use super::ListParams;
 use crate::problem::forbidden_permission;
-
-// sqlx queries for this model need to be `query_as_unchecked!` because `query_as!` does not
-// support user-defined types (`form_list` Json field).
-// See for more info: https://github.com/thallada/rust_sqlx_bug/blob/master/src/main.rs
-// This may be fixed in sqlx 0.4.
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Merchandise {
@@ -31,12 +25,26 @@ pub struct Merchandise {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MerchandiseList {
-    pub id: Option<i32>,
+    pub id: i32,
+    pub shop_id: i32,
+    pub owner_id: i32,
+    pub form_list: serde_json::Value,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UnsavedMerchandiseList {
+    pub shop_id: i32,
+    pub owner_id: i32,
+    pub form_list: Json<Vec<Merchandise>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PostedMerchandiseList {
     pub shop_id: i32,
     pub owner_id: Option<i32>,
     pub form_list: Json<Vec<Merchandise>>,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
 }
 
 impl MerchandiseList {
@@ -44,48 +52,48 @@ impl MerchandiseList {
         "merchandise_list"
     }
 
-    pub fn pk(&self) -> Option<i32> {
+    pub fn pk(&self) -> i32 {
         self.id
     }
 
     pub fn url(&self, api_url: &Url) -> Result<Url> {
-        if let Some(pk) = self.pk() {
-            Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), pk))?)
-        } else {
-            Err(anyhow!(
-                "Cannot get URL for {} with no primary key",
-                Self::resource_name()
-            ))
-        }
+        Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), self.pk()))?)
     }
 
     // TODO: this model will probably never need to be accessed through it's ID, should these methods be removed/unimplemented?
     #[instrument(level = "debug", skip(db))]
-    pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
-        sqlx::query_as_unchecked!(Self, "SELECT * FROM merchandise_lists WHERE id = $1", id)
+    pub async fn get(db: impl Executor<'_, Database = Postgres>, id: i32) -> Result<Self> {
+        sqlx::query_as!(Self, "SELECT * FROM merchandise_lists WHERE id = $1", id)
             .fetch_one(db)
             .await
             .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    pub async fn create(self, db: &PgPool) -> Result<Self> {
-        Ok(sqlx::query_as_unchecked!(
+    #[instrument(level = "debug", skip(merchandise_list, db))]
+    pub async fn create(
+        merchandise_list: UnsavedMerchandiseList,
+        db: impl Executor<'_, Database = Postgres>,
+    ) -> Result<Self> {
+        Ok(sqlx::query_as!(
             Self,
             "INSERT INTO merchandise_lists
             (shop_id, owner_id, form_list, created_at, updated_at)
             VALUES ($1, $2, $3, now(), now())
             RETURNING *",
-            self.shop_id,
-            self.owner_id,
-            self.form_list,
+            merchandise_list.shop_id,
+            merchandise_list.owner_id,
+            serde_json::json!(merchandise_list.form_list),
         )
         .fetch_one(db)
         .await?)
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+    pub async fn delete(
+        db: impl Executor<'_, Database = Postgres> + Copy,
+        owner_id: i32,
+        id: i32,
+    ) -> Result<u64> {
         let merchandise_list =
             sqlx::query!("SELECT owner_id FROM merchandise_lists WHERE id = $1", id)
                 .fetch_one(db)
@@ -94,7 +102,8 @@ impl MerchandiseList {
             return Ok(
                 sqlx::query!("DELETE FROM merchandise_lists WHERE id = $1", id)
                     .execute(db)
-                    .await?,
+                    .await?
+                    .rows_affected(),
             );
         } else {
             return Err(forbidden_permission());
@@ -102,9 +111,12 @@ impl MerchandiseList {
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
+    pub async fn list(
+        db: impl Executor<'_, Database = Postgres>,
+        list_params: &ListParams,
+    ) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
-            sqlx::query_as_unchecked!(
+            sqlx::query_as!(
                 Self,
                 "SELECT * FROM merchandise_lists
                 ORDER BY $1
@@ -117,7 +129,7 @@ impl MerchandiseList {
             .fetch_all(db)
             .await?
         } else {
-            sqlx::query_as_unchecked!(
+            sqlx::query_as!(
                 Self,
                 "SELECT * FROM merchandise_lists
                 LIMIT $1
@@ -131,14 +143,19 @@ impl MerchandiseList {
         Ok(result)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    pub async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
-        let merchandise_list =
+    #[instrument(level = "debug", skip(merchandise_list, db))]
+    pub async fn update(
+        merchandise_list: PostedMerchandiseList,
+        db: impl Executor<'_, Database = Postgres> + Copy,
+        owner_id: i32,
+        id: i32,
+    ) -> Result<Self> {
+        let existing_merchandise_list =
             sqlx::query!("SELECT owner_id FROM merchandise_lists WHERE id = $1", id)
                 .fetch_one(db)
                 .await?;
-        if merchandise_list.owner_id == owner_id {
-            Ok(sqlx::query_as_unchecked!(
+        if existing_merchandise_list.owner_id == owner_id {
+            Ok(sqlx::query_as!(
                 Self,
                 "UPDATE merchandise_lists SET
                 form_list = $2,
@@ -146,7 +163,7 @@ impl MerchandiseList {
                 WHERE id = $1
                 RETURNING *",
                 id,
-                self.form_list,
+                serde_json::json!(merchandise_list.form_list),
             )
             .fetch_one(db)
             .await?)
@@ -156,8 +173,11 @@ impl MerchandiseList {
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn get_by_shop_id(db: &PgPool, shop_id: i32) -> Result<Self> {
-        sqlx::query_as_unchecked!(
+    pub async fn get_by_shop_id(
+        db: impl Executor<'_, Database = Postgres>,
+        shop_id: i32,
+    ) -> Result<Self> {
+        sqlx::query_as!(
             Self,
             "SELECT * FROM merchandise_lists
             WHERE shop_id = $1",
@@ -168,16 +188,21 @@ impl MerchandiseList {
         .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    pub async fn update_by_shop_id(self, db: &PgPool, owner_id: i32, shop_id: i32) -> Result<Self> {
-        let merchandise_list = sqlx::query!(
+    #[instrument(level = "debug", skip(merchandise_list, db))]
+    pub async fn update_by_shop_id(
+        merchandise_list: PostedMerchandiseList,
+        db: impl Executor<'_, Database = Postgres> + Copy,
+        owner_id: i32,
+        shop_id: i32,
+    ) -> Result<Self> {
+        let existing_merchandise_list = sqlx::query!(
             "SELECT owner_id FROM merchandise_lists WHERE shop_id = $1",
             shop_id
         )
         .fetch_one(db)
         .await?;
-        if merchandise_list.owner_id == owner_id {
-            Ok(sqlx::query_as_unchecked!(
+        if existing_merchandise_list.owner_id == owner_id {
+            Ok(sqlx::query_as!(
                 Self,
                 "UPDATE merchandise_lists SET
                 form_list = $2,
@@ -185,7 +210,7 @@ impl MerchandiseList {
                 WHERE shop_id = $1
                 RETURNING *",
                 shop_id,
-                self.form_list,
+                serde_json::json!(merchandise_list.form_list),
             )
             .fetch_one(db)
             .await?)
@@ -196,7 +221,7 @@ impl MerchandiseList {
 
     #[instrument(level = "debug", skip(db))]
     pub async fn update_merchandise_quantity(
-        db: &mut Transaction<PoolConnection<PgConnection>>,
+        db: impl Executor<'_, Database = Postgres>,
         shop_id: i32,
         mod_name: &str,
         local_form_id: i32,
@@ -215,7 +240,7 @@ impl MerchandiseList {
             "is_food": is_food,
             "price": price,
         }]);
-        Ok(sqlx::query_as_unchecked!(
+        Ok(sqlx::query_as!(
             Self,
             "UPDATE
                 merchandise_lists
@@ -255,7 +280,7 @@ impl MerchandiseList {
             RETURNING merchandise_lists.*",
             shop_id,
             mod_name,
-            local_form_id,
+            &local_form_id.to_string(),
             quantity_delta,
             add_item,
         )
@@ -263,10 +288,10 @@ impl MerchandiseList {
         .await
         .map_err(|error| {
             let anyhow_error = anyhow!(error);
-            if let Some(sqlx::error::Error::Database(db_error)) =
-                anyhow_error.downcast_ref::<sqlx::error::Error>()
+            if let Some(db_error) =
+                anyhow_error.downcast_ref::<sqlx::postgres::PgDatabaseError>()
             {
-                if db_error.code() == Some("23502") && db_error.column_name() == Some("form_list") {
+                if db_error.code() == "23502" && db_error.column() == Some("form_list") {
                     return anyhow!(HttpApiProblem::with_title_and_type_from_status(
                         StatusCode::NOT_FOUND
                     )

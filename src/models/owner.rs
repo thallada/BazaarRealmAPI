@@ -1,8 +1,8 @@
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use chrono::prelude::*;
 use ipnetwork::IpNetwork;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::{Done, Executor, Postgres};
 use tracing::instrument;
 use url::Url;
 use uuid::Uuid;
@@ -12,15 +12,31 @@ use crate::problem::forbidden_permission;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Owner {
-    pub id: Option<i32>,
+    pub id: i32,
     pub name: String,
     #[serde(skip_serializing)]
-    pub api_key: Option<Uuid>,
+    pub api_key: Uuid,
     #[serde(skip_serializing)]
     pub ip_address: Option<IpNetwork>,
     pub mod_version: i32,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UnsavedOwner {
+    pub name: String,
+    #[serde(skip_serializing)]
+    pub api_key: Uuid,
+    #[serde(skip_serializing)]
+    pub ip_address: Option<IpNetwork>,
+    pub mod_version: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PostedOwner {
+    pub name: String,
+    pub mod_version: i32,
 }
 
 impl Owner {
@@ -28,62 +44,66 @@ impl Owner {
         "owner"
     }
 
-    pub fn pk(&self) -> Option<i32> {
+    pub fn pk(&self) -> i32 {
         self.id
     }
 
     pub fn url(&self, api_url: &Url) -> Result<Url> {
-        if let Some(pk) = self.pk() {
-            Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), pk))?)
-        } else {
-            Err(anyhow!(
-                "Cannot get URL for {} with no primary key",
-                Self::resource_name()
-            ))
-        }
+        Ok(api_url.join(&format!("{}s/{}", Self::resource_name(), self.pk()))?)
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn get(db: &PgPool, id: i32) -> Result<Self> {
+    pub async fn get(db: impl Executor<'_, Database = Postgres>, id: i32) -> Result<Self> {
         sqlx::query_as!(Self, "SELECT * FROM owners WHERE id = $1", id)
             .fetch_one(db)
             .await
             .map_err(Error::new)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    pub async fn create(self, db: &PgPool) -> Result<Self> {
+    #[instrument(level = "debug", skip(owner, db))]
+    pub async fn create(
+        owner: UnsavedOwner,
+        db: impl Executor<'_, Database = Postgres>,
+    ) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
             "INSERT INTO owners
                 (name, api_key, ip_address, mod_version, created_at, updated_at)
                 VALUES ($1, $2, $3, $4, now(), now())
                 RETURNING *",
-            self.name,
-            self.api_key,
-            self.ip_address,
-            self.mod_version,
+            owner.name,
+            owner.api_key,
+            owner.ip_address,
+            owner.mod_version,
         )
         .fetch_one(db)
         .await?)
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn delete(db: &PgPool, owner_id: i32, id: i32) -> Result<u64> {
+    pub async fn delete(
+        db: impl Executor<'_, Database = Postgres> + Copy,
+        owner_id: i32,
+        id: i32,
+    ) -> Result<u64> {
         let owner = sqlx::query!("SELECT id FROM owners WHERE id = $1", id)
             .fetch_one(db)
             .await?;
         if owner.id == owner_id {
             Ok(sqlx::query!("DELETE FROM owners WHERE id = $1", id)
                 .execute(db)
-                .await?)
+                .await?
+                .rows_affected())
         } else {
             return Err(forbidden_permission());
         }
     }
 
     #[instrument(level = "debug", skip(db))]
-    pub async fn list(db: &PgPool, list_params: &ListParams) -> Result<Vec<Self>> {
+    pub async fn list(
+        db: impl Executor<'_, Database = Postgres>,
+        list_params: &ListParams,
+    ) -> Result<Vec<Self>> {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
                 Self,
@@ -112,12 +132,17 @@ impl Owner {
         Ok(result)
     }
 
-    #[instrument(level = "debug", skip(self, db))]
-    pub async fn update(self, db: &PgPool, owner_id: i32, id: i32) -> Result<Self> {
-        let owner = sqlx::query!("SELECT id FROM owners WHERE id = $1", id)
+    #[instrument(level = "debug", skip(owner, db))]
+    pub async fn update(
+        owner: PostedOwner,
+        db: impl Executor<'_, Database = Postgres> + Copy,
+        owner_id: i32,
+        id: i32,
+    ) -> Result<Self> {
+        let existing_owner = sqlx::query!("SELECT id FROM owners WHERE id = $1", id)
             .fetch_one(db)
             .await?;
-        if owner.id == owner_id {
+        if existing_owner.id == owner_id {
             Ok(sqlx::query_as!(
                 Self,
                 "UPDATE owners SET
@@ -127,8 +152,8 @@ impl Owner {
                 WHERE id = $1
                 RETURNING *",
                 id,
-                self.name,
-                self.mod_version,
+                owner.name,
+                owner.mod_version,
             )
             .fetch_one(db)
             .await?)

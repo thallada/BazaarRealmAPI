@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use http::StatusCode;
 use mime::Mime;
 use uuid::Uuid;
@@ -6,7 +6,10 @@ use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
 use crate::caches::CACHES;
-use crate::models::{InteriorRefList, ListParams, MerchandiseList, Shop};
+use crate::models::{
+    InteriorRefList, ListParams, MerchandiseList, PostedShop, Shop, UnsavedInteriorRefList,
+    UnsavedMerchandiseList, UnsavedShop,
+};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
@@ -63,7 +66,7 @@ pub async fn list(
 }
 
 pub async fn create(
-    shop: Shop,
+    shop: PostedShop,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
@@ -75,43 +78,40 @@ pub async fn create(
         _ => ContentType::Json,
     };
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let shop_with_owner_id = Shop {
-        owner_id: Some(owner_id),
-        ..shop
+    let unsaved_shop = UnsavedShop {
+        name: shop.name,
+        description: shop.description,
+        owner_id,
     };
-    let saved_shop = shop_with_owner_id
-        .create(&env.db)
+    let mut tx = env
+        .db
+        .begin()
+        .await
+        .map_err(|error| reject_anyhow(anyhow!(error)))?;
+    let saved_shop = Shop::create(unsaved_shop, &mut tx)
         .await
         .map_err(reject_anyhow)?;
 
     // also save empty interior_ref_list and merchandise_list rows
-    // TODO: do this in a transaction with shop.create
-    if let Some(shop_id) = saved_shop.id {
-        let interior_ref_list = InteriorRefList {
-            id: None,
-            shop_id,
-            owner_id: Some(owner_id),
-            ref_list: sqlx::types::Json::default(),
-            created_at: None,
-            updated_at: None,
-        };
-        interior_ref_list
-            .create(&env.db)
-            .await
-            .map_err(reject_anyhow)?;
-        let merchandise_list = MerchandiseList {
-            id: None,
-            shop_id,
-            owner_id: Some(owner_id),
-            form_list: sqlx::types::Json::default(),
-            created_at: None,
-            updated_at: None,
-        };
-        merchandise_list
-            .create(&env.db)
-            .await
-            .map_err(reject_anyhow)?;
-    }
+    let interior_ref_list = UnsavedInteriorRefList {
+        shop_id: saved_shop.id,
+        owner_id,
+        ref_list: sqlx::types::Json::default(),
+    };
+    InteriorRefList::create(interior_ref_list, &mut tx)
+        .await
+        .map_err(reject_anyhow)?;
+    let merchandise_list = UnsavedMerchandiseList {
+        shop_id: saved_shop.id,
+        owner_id,
+        form_list: sqlx::types::Json::default(),
+    };
+    MerchandiseList::create(merchandise_list, &mut tx)
+        .await
+        .map_err(reject_anyhow)?;
+    tx.commit()
+        .await
+        .map_err(|error| reject_anyhow(anyhow!(error)))?;
 
     let url = saved_shop.url(&env.api_url).map_err(reject_anyhow)?;
     let reply: Box<dyn Reply> = match content_type {
@@ -133,7 +133,7 @@ pub async fn create(
 
 pub async fn update(
     id: i32,
-    shop: Shop,
+    shop: PostedShop,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
@@ -145,21 +145,15 @@ pub async fn update(
         _ => ContentType::Json,
     };
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let shop_with_id_and_owner_id = if shop.owner_id.is_some() {
-        // allows an owner to transfer ownership of shop to another owner
-        Shop {
-            id: Some(id),
-            ..shop
-        }
-    } else {
-        Shop {
-            id: Some(id),
-            owner_id: Some(owner_id),
-            ..shop
-        }
+    let posted_shop = PostedShop {
+        owner_id: match shop.owner_id {
+            // allows an owner to transfer ownership of shop to another owner
+            Some(posted_owner_id) => Some(posted_owner_id),
+            None => Some(owner_id),
+        },
+        ..shop
     };
-    let updated_shop = shop_with_id_and_owner_id
-        .update(&env.db, owner_id, id)
+    let updated_shop = Shop::update(posted_shop, &env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
     let url = updated_shop.url(&env.api_url).map_err(reject_anyhow)?;

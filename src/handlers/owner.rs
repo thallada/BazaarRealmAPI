@@ -8,7 +8,7 @@ use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
 use crate::caches::CACHES;
-use crate::models::{ListParams, Owner};
+use crate::models::{ListParams, Owner, PostedOwner, UnsavedOwner};
 use crate::problem::{reject_anyhow, unauthorized_no_api_key};
 use crate::Environment;
 
@@ -65,7 +65,7 @@ pub async fn list(
 }
 
 pub async fn create(
-    owner: Owner,
+    owner: PostedOwner,
     remote_addr: Option<SocketAddr>,
     api_key: Option<Uuid>,
     real_ip: Option<IpNetwork>,
@@ -79,20 +79,16 @@ pub async fn create(
             }
             _ => ContentType::Json,
         };
-        let owner_with_ip_and_key = match remote_addr {
-            Some(addr) => Owner {
-                api_key: Some(api_key),
-                ip_address: Some(IpNetwork::from(addr.ip())),
-                ..owner
+        let unsaved_owner = UnsavedOwner {
+            api_key,
+            ip_address: match remote_addr {
+                Some(addr) => Some(IpNetwork::from(addr.ip())),
+                None => real_ip,
             },
-            None => Owner {
-                api_key: Some(api_key),
-                ip_address: real_ip,
-                ..owner
-            },
+            name: owner.name,
+            mod_version: owner.mod_version,
         };
-        let saved_owner = owner_with_ip_and_key
-            .create(&env.db)
+        let saved_owner = Owner::create(unsaved_owner, &env.db)
             .await
             .map_err(reject_anyhow)?;
         let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
@@ -118,7 +114,7 @@ pub async fn create(
 
 pub async fn update(
     id: i32,
-    owner: Owner,
+    owner: PostedOwner,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
@@ -130,12 +126,7 @@ pub async fn update(
         _ => ContentType::Json,
     };
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let owner_with_id = Owner {
-        id: Some(id),
-        ..owner
-    };
-    let updated_owner = owner_with_id
-        .update(&env.db, owner_id, id)
+    let updated_owner = Owner::update(owner, &env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
     let url = updated_owner.url(&env.api_url).map_err(reject_anyhow)?;
