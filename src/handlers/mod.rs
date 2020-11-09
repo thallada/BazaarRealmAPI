@@ -64,6 +64,12 @@ pub trait DataReply: Reply + Sized {
 pub struct Json {}
 pub struct Bincode {}
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum ContentType {
+    Json,
+    Bincode,
+}
+
 impl Reply for ETagReply<Json> {
     fn into_response(self) -> Response {
         let mut res = Response::new(self.body.into());
