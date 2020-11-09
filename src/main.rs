@@ -60,6 +60,7 @@ where
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    openssl_probe::init_ssl_cert_env_vars();
     dotenv().ok();
     let env_log_filter =
         env::var("RUST_LOG").unwrap_or_else(|_| "warp=info,bazaar_realm_api=info".to_owned());

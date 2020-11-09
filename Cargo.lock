@@ -147,6 +147,7 @@ dependencies = [
  "listenfd",
  "lru",
  "mime",
+ "openssl-probe",
  "seahash",
  "serde",
  "serde_json",

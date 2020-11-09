@@ -16,6 +16,7 @@ hyper = "0.13"
 lazy_static = "1.4"
 listenfd = "0.3"
 mime = "0.3"
+openssl-probe = "0.1"
 tokio = { version = "0.2", features = ["macros", "rt-threaded", "sync"] }
 sqlx = { version = "0.3", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono", "uuid", "ipnetwork", "json" ] }
 warp = { version = "0.2", features = ["compression"] }
