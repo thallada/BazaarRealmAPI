@@ -146,6 +146,7 @@ dependencies = [
  "sqlx",
  "tokio",
  "tracing",
+ "tracing-appender",
  "tracing-futures",
  "tracing-subscriber",
  "url",
@@ -1935,6 +1936,17 @@ dependencies = [
  "log",
  "tracing-attributes",
  "tracing-core",
+]
+
+[[package]]
+name = "tracing-appender"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7aa52d56cc0d79ab604e8a022a1cebc4de33cf09dc9933c94353bea2e00d6e88"
+dependencies = [
+ "chrono",
+ "crossbeam-channel",
+ "tracing-subscriber",
 ]
 
 [[package]]

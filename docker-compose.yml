@@ -6,6 +6,10 @@ services:
     volumes:
       - cargo:/home/rust/.cargo
       - target:/home/rust/src/target
+    env_file:
+      - .env.docker
+    ports:
+      - "3030:3030"
 
 volumes:
   cargo: {}

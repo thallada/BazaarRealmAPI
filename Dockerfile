@@ -10,6 +10,7 @@ FROM ${BASE_IMAGE} AS builder
 # Add our source code.
 ADD --chown=rust:rust . ./
 
+ENV SQLX_OFFLINE true
 # Build our application.
 RUN cargo build --release
 
@@ -19,4 +20,8 @@ RUN apk --no-cache add ca-certificates
 COPY --from=builder \
     /home/rust/src/target/x86_64-unknown-linux-musl/release/bazaar_realm_api \
     /usr/local/bin/
+
+# forward request and error logs to docker log collector
+RUN ln -sf /dev/stdout /var/log/bazaarrealm.log
+
 CMD /usr/local/bin/bazaar_realm_api
