@@ -395,6 +395,21 @@ async fn main() -> Result<()> {
         .with(warp::compression::gzip())
         .with(warp::trace::request());
 
+    if let Ok(tls_cert) = env::var("TLS_CERT") {
+        if let Ok(tls_key) = env::var("TLS_KEY") {
+            let port = env::var("PORT")
+                .unwrap_or_else(|_| "443".to_owned())
+                .parse()?;
+            warp::serve(routes)
+                .tls()
+                .cert_path(tls_cert)
+                .key_path(tls_key)
+                .run(([0, 0, 0, 0], port))
+                .await;
+            return Ok(());
+        }
+    }
+
     let svc = warp::service(routes);
     let make_svc = hyper::service::make_service_fn(|_: _| {
         let svc = svc.clone();
@@ -405,10 +420,12 @@ async fn main() -> Result<()> {
     let server = if let Some(l) = listenfd.take_tcp_listener(0)? {
         Server::from_tcp(l)?
     } else {
-        Server::bind(&([0, 0, 0, 0], 3030).into())
+        let port = env::var("PORT")
+            .unwrap_or_else(|_| "3030".to_owned())
+            .parse()?;
+        Server::bind(&([0, 0, 0, 0], port).into())
     };
 
-    // warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
     server.serve(make_svc).await?;
     Ok(())
 }

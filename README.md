@@ -50,6 +50,7 @@ The easiest way to get the server up and running is using Docker.
 DATABASE_URL="postgresql://bazaarrealm:<password>@db/bazaarrealm"
 RUST_LOG="bazaar_realm_api=debug,warp=info"
 HOST="http://localhost:3030"
+PORT=3030
 POSTGRES_DB=bazaarrealm
 POSTGRES_USER=bazaarrealm
 POSTGRES_PASSWORD=<password>
@@ -92,6 +93,7 @@ postgres=# CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 DATABASE_URL=postgresql://bazaarrealm:<password>@localhost/bazaarrealm
 RUST_LOG="bazaar_realm_api=debug"
 HOST="http://localhost:3030"
+PORT=3030
 ```
 
 4. Install
