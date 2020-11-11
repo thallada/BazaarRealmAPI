@@ -395,7 +395,10 @@ async fn main() -> Result<()> {
         .with(warp::compression::gzip())
         .with(warp::trace::request());
 
-    let svc = warp::service(routes);
+    let svc = warp::service(routes)
+        .tls()
+        .cert_path("cert.pem")
+        .key_path("key.pem");
     let make_svc = hyper::service::make_service_fn(|_: _| {
         let svc = svc.clone();
         async move { Ok::<_, Infallible>(svc) }

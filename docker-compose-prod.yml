@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    volumes:
+      - cargo:/home/rust/.cargo
+      - target:/home/rust/src/target
+    env_file:
+      - .env.docker
+    ports:
+      - "443:443"
+    depends_on:
+      - db
+  db:
+    image: postgres:alpine
+    volumes:
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
+    env_file:
+      - .env.docker
+
+volumes:
+  cargo: {}
+  target: {}
