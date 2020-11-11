@@ -8,7 +8,7 @@ use hyper::server::Server;
 use listenfd::ListenFd;
 use serde::{de::DeserializeOwned, Serialize};
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{Pool, Postgres};
+use sqlx::{migrate, Pool, Postgres};
 use std::convert::Infallible;
 use std::env;
 use tracing_subscriber::fmt::format::FmtSpan;
@@ -68,21 +68,19 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let env_log_filter =
         env::var("RUST_LOG").unwrap_or_else(|_| "warp=info,bazaar_realm_api=info".to_owned());
-    let file_appender = tracing_appender::rolling::hourly(
-        env::var("LOG_DIR").unwrap_or_else(|_| ".".to_owned()),
-        "bazaarrealm.log",
-    );
-    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+
     tracing_subscriber::fmt()
         .with_env_filter(env_log_filter)
         .with_span_events(FmtSpan::CLOSE)
-        .with_writer(non_blocking)
+        .with_writer(std::io::stdout)
         .init();
 
     let host = env::var("HOST").expect("`HOST` environment variable not defined");
     let host_url = Url::parse(&host).expect("Cannot parse URL from `HOST` environment variable");
     let api_url = host_url.join("/v1/")?;
     let env = Environment::new(api_url).await?;
+
+    migrate!("db/migrations").run(&env.db).await?;
 
     let status_handler = warp::path::path("status")
         .and(warp::path::end())
@@ -407,7 +405,7 @@ async fn main() -> Result<()> {
     let server = if let Some(l) = listenfd.take_tcp_listener(0)? {
         Server::from_tcp(l)?
     } else {
-        Server::bind(&([127, 0, 0, 1], 3030).into())
+        Server::bind(&([0, 0, 0, 0], 3030).into())
     };
 
     // warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;

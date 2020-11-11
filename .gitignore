@@ -3,5 +3,4 @@
 .env
 .env.docker
 Session.vim
-src/db/refinery.toml
 tags

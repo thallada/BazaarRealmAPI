@@ -36,7 +36,32 @@ Related projects:
 - [`BazaarRealmMod`](https://github.com/thallada/BazaarRealmMod): Papyrus
   scripts, ESP plugin, and all other resources for the mod
 
-## Development Setup
+## Docker Setup
+
+The easiest way to get the server up and running is using Docker.
+
+1. Download and install [Docker Desktop](https://www.docker.com/get-started)
+2. Git clone this repo into a folder of your choosing: `git clone https://github.com/thallada/BazaarRealmAPI.git`
+3. Create a new file `.env.docker` in the checked out `bazaar_realm_api`
+   folder with the contents (replacing `<password>` with a secure generated
+   password):
+
+```
+DATABASE_URL="postgresql://bazaarrealm:<password>@db/bazaarrealm"
+RUST_LOG="bazaar_realm_api=debug,warp=info"
+HOST="http://localhost:3030"
+POSTGRES_DB=bazaarrealm
+POSTGRES_USER=bazaarrealm
+POSTGRES_PASSWORD=<password>
+```
+
+3. In the checked out repo, run: `docker-compose build`
+4. Once that completes, run: `docker-compose up`
+
+## Manual Development Setup
+
+If you would prefer to run the server outside Docker on your host machine, do
+the following steps to get everything setup.
 
 1. Install and run postgres.
 2. Create postgres user and database (and add uuid extension while you're there
@@ -69,21 +94,13 @@ RUST_LOG="bazaar_realm_api=debug"
 HOST="http://localhost:3030"
 ```
 
-4. Create a new file at `src/db/refinery.toml` with the contents:
-
-```
-[main]
-db_type = "Postgres"
-db_host = "localhost"
-db_port = "5432"
-db_user = "bazaarrealm"
-db_pass = "<database-password-here>"
-db_name = "bazaarrealm"
-```
-
-5. Install `refinery_cli` with `cargo install refinery_cli` and run `refinery migrate -c ./src/db/refinery.toml files -p ./src/db/migrations/` which will
-   run the database migrations.
-6. Run `./devserver.sh` to run the dev server (by default it listens at
+4. Install
+   [`sqlx_cli`](https://github.com/launchbadge/sqlx/tree/master/sqlx-cli) with
+   `cargo install --version=0.1.0-beta.1 sqlx-cli --no-default-features --features postgres`
+5. `cd db` to enter the `db` sub-directory of this repo.
+6. Run `sqlx migrate run` which will run all the database migrations.
+7. `cd ..` to return to the top-level directory of this repo.
+8. Run `./devserver.sh` to run the dev server (by default it listens at
    `127.0.0.1:3030`).
 
 ## Testing Data
