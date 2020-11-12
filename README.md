@@ -41,6 +41,33 @@ Related projects:
 The easiest way to get the server up and running is using Docker.
 
 1. Download and install [Docker Desktop](https://www.docker.com/get-started)
+2. Run `docker pull postgres:alpine` then `docker pull thallada/bazaarrealm:latest`
+3. Run `docker run -d --name postgres --network=host --env POSTGRES_DB=bazaarrealm --env POSTGRES_USER=bazaarrealm --env POSTGRES_PASSWORD=<password>`
+   (replacing `<password>` with a secure generated password)
+4. Run `docker run -d --name bazaarrealm --network=host --env DATABASE_URL=postgresql://bazaarrealm:<password>@localhost/bazaarrealm`
+   (replacing `<password>` with what you generated in previous step)
+5. The server should now be available at `http://localhost:3030`.
+
+### TLS setup
+
+If you would like to access the server over HTTPS, you can use [Let's
+Encrypt](https://letsencrypt.org/) to generate a SSL certificate and key and
+provide it to the API. Once you use [certbot](https://certbot.eff.org/) to
+generate the certificate and key for your domain in
+`/etc/letsencrypt/live/<domain>/`, run the api server with:
+
+```
+docker run -d --name bazaarrealm --network=host --env DATABASE_URL=postgresql://bazaarrealm:<password>@localhost/bazaarrealm --env PORT=443 --HOST=https://<domain> --env TLS_CERT=/etc/letsencrypt/live/<domain>/fullchain.pem --env TLS_KEY=/etc/letsencrypt/live/<domain>/privkey.pem -v /etc/letsencrypt/:/etc/letsencrypt/ thallada/bazaarrealm:latest
+```
+
+The server should be accessible at your domain: `https://<domain>`.
+
+## Docker-Compose Setup
+
+An alternative way to set up the API, is to use `docker-compose` which can
+orchestrate setting up the database and web server containers.
+
+1. Download and install [Docker Desktop](https://www.docker.com/get-started)
 2. Git clone this repo into a folder of your choosing: `git clone https://github.com/thallada/BazaarRealmAPI.git`
 3. Create a new file `.env.docker` in the checked out `bazaar_realm_api`
    folder with the contents (replacing `<password>` with a secure generated
