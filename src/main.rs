@@ -3,7 +3,7 @@ extern crate lazy_static;
 
 use anyhow::Result;
 use dotenv::dotenv;
-use http::StatusCode;
+use http::header::SERVER;
 use hyper::server::Server;
 use listenfd::ListenFd;
 use serde::{de::DeserializeOwned, Serialize};
@@ -13,6 +13,7 @@ use std::convert::Infallible;
 use std::env;
 use tracing_subscriber::fmt::format::FmtSpan;
 use url::Url;
+use warp::http::Response;
 use warp::Filter;
 
 mod caches;
@@ -22,6 +23,7 @@ mod macros;
 mod models;
 mod problem;
 
+use handlers::SERVER_STRING;
 use models::{
     ListParams, PostedInteriorRefList, PostedMerchandiseList, PostedOwner, PostedShop,
     PostedTransaction,
@@ -85,7 +87,7 @@ async fn main() -> Result<()> {
     let status_handler = warp::path::path("status")
         .and(warp::path::end())
         .and(warp::get())
-        .map(|| StatusCode::OK); // TODO: return what api versions this server supports instead
+        .map(|| Response::builder().header(SERVER, SERVER_STRING).body("Ok"));
     let get_owner_handler = warp::path("owners").and(
         warp::path::param()
             .and(warp::path::end())

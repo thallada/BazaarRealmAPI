@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::str::FromStr;
 
 use anyhow::{anyhow, Error, Result};
-use http::header::{HeaderValue, CONTENT_TYPE, ETAG};
+use http::header::{HeaderValue, CONTENT_TYPE, ETAG, SERVER};
 use http::StatusCode;
 use http_api_problem::HttpApiProblem;
 use mime::{FromStrError, Mime};
@@ -22,6 +22,8 @@ pub mod transaction;
 use super::caches::{CachedResponse, CACHES};
 use super::problem::{unauthorized_no_api_key, unauthorized_no_owner};
 use super::Environment;
+
+pub static SERVER_STRING: &str = "BazaarRealmAPI/0.1.0";
 
 #[instrument(level = "debug", skip(env, api_key))]
 pub async fn authenticate(env: &Environment, api_key: Option<Uuid>) -> Result<i32> {
@@ -75,6 +77,8 @@ impl Reply for ETagReply<Json> {
         let mut res = Response::new(self.body.into());
         res.headers_mut()
             .insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        res.headers_mut()
+            .insert(SERVER, HeaderValue::from_static(SERVER_STRING));
         if let Ok(val) = HeaderValue::from_str(&self.etag) {
             res.headers_mut().insert(ETAG, val);
         } else {
@@ -113,6 +117,8 @@ impl Reply for ETagReply<Bincode> {
             CONTENT_TYPE,
             HeaderValue::from_static("application/octet-stream"),
         );
+        res.headers_mut()
+            .insert(SERVER, HeaderValue::from_static(SERVER_STRING));
         if let Ok(val) = HeaderValue::from_str(&self.etag) {
             res.headers_mut().insert(ETAG, val);
         } else {
