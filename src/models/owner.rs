@@ -24,18 +24,16 @@ pub struct Owner {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnsavedOwner {
+pub struct PostedOwner {
     pub name: String,
-    #[serde(skip_serializing)]
-    pub api_key: Uuid,
-    #[serde(skip_serializing)]
-    pub ip_address: Option<IpNetwork>,
     pub mod_version: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PostedOwner {
+pub struct FullPostedOwner {
     pub name: String,
+    pub api_key: Uuid,
+    pub ip_address: Option<IpNetwork>,
     pub mod_version: i32,
 }
 
@@ -62,7 +60,7 @@ impl Owner {
 
     #[instrument(level = "debug", skip(owner, db))]
     pub async fn create(
-        owner: UnsavedOwner,
+        owner: FullPostedOwner,
         db: impl Executor<'_, Database = Postgres>,
     ) -> Result<Self> {
         Ok(sqlx::query_as!(

@@ -1,5 +1,6 @@
 use anyhow::Result;
 use http::StatusCode;
+use hyper::body::Bytes;
 use ipnetwork::IpNetwork;
 use mime::Mime;
 use std::net::SocketAddr;
@@ -7,13 +8,14 @@ use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
-use crate::caches::CACHES;
-use crate::models::{ListParams, Owner, PostedOwner, UnsavedOwner};
+use crate::caches::{CachedResponse, CACHES};
+use crate::models::{FullPostedOwner, ListParams, Owner, PostedOwner};
 use crate::problem::{reject_anyhow, unauthorized_no_api_key};
 use crate::Environment;
 
 use super::{
-    authenticate, check_etag, AcceptHeader, Bincode, ContentType, DataReply, ETagReply, Json,
+    authenticate, check_etag, AcceptHeader, Bincode, ContentType, DataReply, DeserializedBody,
+    ETagReply, Json, TypedCache,
 };
 
 pub async fn get(
@@ -22,10 +24,10 @@ pub async fn get(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => (ContentType::Bincode, &CACHES.owner_bin),
-        _ => (ContentType::Json, &CACHES.owner),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<i32, CachedResponse>::pick_cache(accept, &CACHES.owner_bin, &CACHES.owner);
     let response = cache
         .get_response(id, || async {
             let owner = Owner::get(&env.db, id).await?;
@@ -46,10 +48,14 @@ pub async fn list(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => (ContentType::Bincode, &CACHES.list_owners_bin),
-        _ => (ContentType::Json, &CACHES.list_owners),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<ListParams, CachedResponse>::pick_cache(
+        accept,
+        &CACHES.list_owners_bin,
+        &CACHES.list_owners,
+    );
     let response = cache
         .get_response(list_params.clone(), || async {
             let owners = Owner::list(&env.db, &list_params).await?;
@@ -65,7 +71,7 @@ pub async fn list(
 }
 
 pub async fn create(
-    owner: PostedOwner,
+    bytes: Bytes,
     remote_addr: Option<SocketAddr>,
     api_key: Option<Uuid>,
     real_ip: Option<IpNetwork>,
@@ -73,24 +79,21 @@ pub async fn create(
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
     if let Some(api_key) = api_key {
-        let content_type = match content_type {
-            Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
-                ContentType::Bincode
-            }
-            _ => ContentType::Json,
-        };
-        let unsaved_owner = UnsavedOwner {
+        let DeserializedBody {
+            body: owner,
+            content_type,
+        } = DeserializedBody::<PostedOwner>::from_bytes(bytes, content_type)
+            .map_err(reject_anyhow)?;
+        let owner = FullPostedOwner {
+            name: owner.name,
+            mod_version: owner.mod_version,
             api_key,
             ip_address: match remote_addr {
                 Some(addr) => Some(IpNetwork::from(addr.ip())),
                 None => real_ip,
             },
-            name: owner.name,
-            mod_version: owner.mod_version,
         };
-        let saved_owner = Owner::create(unsaved_owner, &env.db)
-            .await
-            .map_err(reject_anyhow)?;
+        let saved_owner = Owner::create(owner, &env.db).await.map_err(reject_anyhow)?;
         let url = saved_owner.url(&env.api_url).map_err(reject_anyhow)?;
         let reply: Box<dyn Reply> = match content_type {
             ContentType::Bincode => Box::new(
@@ -114,17 +117,15 @@ pub async fn create(
 
 pub async fn update(
     id: i32,
-    owner: PostedOwner,
+    bytes: Bytes,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let content_type = match content_type {
-        Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
-            ContentType::Bincode
-        }
-        _ => ContentType::Json,
-    };
+    let DeserializedBody {
+        body: owner,
+        content_type,
+    } = DeserializedBody::<PostedOwner>::from_bytes(bytes, content_type).map_err(reject_anyhow)?;
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
     let updated_owner = Owner::update(owner, &env.db, owner_id, id)
         .await

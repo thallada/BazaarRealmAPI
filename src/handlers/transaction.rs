@@ -1,19 +1,19 @@
 use anyhow::{anyhow, Result};
 use http::StatusCode;
+use hyper::body::Bytes;
 use mime::Mime;
 use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
-use crate::caches::CACHES;
-use crate::models::{
-    ListParams, MerchandiseList, PostedTransaction, Transaction, UnsavedTransaction,
-};
+use crate::caches::{CachedResponse, CACHES};
+use crate::models::{ListParams, MerchandiseList, PostedTransaction, Transaction};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
 use super::{
-    authenticate, check_etag, AcceptHeader, Bincode, ContentType, DataReply, ETagReply, Json,
+    authenticate, check_etag, AcceptHeader, Bincode, ContentType, DataReply, DeserializedBody,
+    ETagReply, Json, TypedCache,
 };
 
 pub async fn get(
@@ -22,10 +22,14 @@ pub async fn get(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => (ContentType::Bincode, &CACHES.transaction_bin),
-        _ => (ContentType::Json, &CACHES.transaction),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<i32, CachedResponse>::pick_cache(
+        accept,
+        &CACHES.transaction_bin,
+        &CACHES.transaction,
+    );
     let response = cache
         .get_response(id, || async {
             let transaction = Transaction::get(&env.db, id).await?;
@@ -48,12 +52,14 @@ pub async fn list(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => {
-            (ContentType::Bincode, &CACHES.list_transactions_bin)
-        }
-        _ => (ContentType::Json, &CACHES.list_transactions),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<ListParams, CachedResponse>::pick_cache(
+        accept,
+        &CACHES.list_transactions_bin,
+        &CACHES.list_transactions,
+    );
     let response = cache
         .get_response(list_params.clone(), || async {
             let transactions = Transaction::list(&env.db, &list_params).await?;
@@ -77,13 +83,14 @@ pub async fn list_by_shop_id(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => (
-            ContentType::Bincode,
-            &CACHES.list_transactions_by_shop_id_bin,
-        ),
-        _ => (ContentType::Json, &CACHES.list_transactions_by_shop_id),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<(i32, ListParams), CachedResponse>::pick_cache(
+        accept,
+        &CACHES.list_transactions_by_shop_id_bin,
+        &CACHES.list_transactions_by_shop_id,
+    );
     let response = cache
         .get_response((shop_id, list_params.clone()), || async {
             let transactions = Transaction::list_by_shop_id(&env.db, shop_id, &list_params).await?;
@@ -101,42 +108,29 @@ pub async fn list_by_shop_id(
 }
 
 pub async fn create(
-    transaction: PostedTransaction,
+    bytes: Bytes,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let content_type = match content_type {
-        Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
-            ContentType::Bincode
-        }
-        _ => ContentType::Json,
-    };
+    let DeserializedBody {
+        body: mut transaction,
+        content_type,
+    } = DeserializedBody::<PostedTransaction>::from_bytes(bytes, content_type)
+        .map_err(reject_anyhow)?;
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let unsaved_transaction = UnsavedTransaction {
-        shop_id: transaction.shop_id,
-        owner_id,
-        mod_name: transaction.mod_name,
-        local_form_id: transaction.local_form_id,
-        name: transaction.name,
-        form_type: transaction.form_type,
-        is_food: transaction.is_food,
-        price: transaction.price,
-        is_sell: transaction.is_sell,
-        quantity: transaction.quantity,
-        amount: transaction.amount,
-    };
+    transaction.owner_id = Some(owner_id);
     let mut tx = env
         .db
         .begin()
         .await
         .map_err(|error| reject_anyhow(anyhow!(error)))?;
-    let saved_transaction = Transaction::create(unsaved_transaction, &mut tx)
+    let saved_transaction = Transaction::create(transaction, &mut tx)
         .await
         .map_err(reject_anyhow)?;
-    let quantity_delta = match transaction.is_sell {
-        true => transaction.quantity,
-        false => transaction.quantity * -1,
+    let quantity_delta = match saved_transaction.is_sell {
+        true => saved_transaction.quantity,
+        false => saved_transaction.quantity * -1,
     };
     let updated_merchandise_list = MerchandiseList::update_merchandise_quantity(
         &mut tx,

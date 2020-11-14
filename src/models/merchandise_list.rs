@@ -15,12 +15,12 @@ use crate::problem::forbidden_permission;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Merchandise {
     pub mod_name: String,
-    pub local_form_id: i32,
+    pub local_form_id: u32,
     pub name: String,
-    pub quantity: i32,
-    pub form_type: i32,
+    pub quantity: u32,
+    pub form_type: u32,
     pub is_food: bool,
-    pub price: i32,
+    pub price: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -28,16 +28,9 @@ pub struct MerchandiseList {
     pub id: i32,
     pub shop_id: i32,
     pub owner_id: i32,
-    pub form_list: serde_json::Value,
+    pub form_list: Json<Vec<Merchandise>>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnsavedMerchandiseList {
-    pub shop_id: i32,
-    pub owner_id: i32,
-    pub form_list: Json<Vec<Merchandise>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -63,23 +56,31 @@ impl MerchandiseList {
     // TODO: this model will probably never need to be accessed through it's ID, should these methods be removed/unimplemented?
     #[instrument(level = "debug", skip(db))]
     pub async fn get(db: impl Executor<'_, Database = Postgres>, id: i32) -> Result<Self> {
-        sqlx::query_as!(Self, "SELECT * FROM merchandise_lists WHERE id = $1", id)
-            .fetch_one(db)
-            .await
-            .map_err(Error::new)
+        sqlx::query_as!(
+            Self,
+            r#"SELECT id, shop_id, owner_id, created_at, updated_at,
+                form_list as "form_list: Json<Vec<Merchandise>>"
+            FROM merchandise_lists
+            WHERE id = $1"#,
+            id,
+        )
+        .fetch_one(db)
+        .await
+        .map_err(Error::new)
     }
 
     #[instrument(level = "debug", skip(merchandise_list, db))]
     pub async fn create(
-        merchandise_list: UnsavedMerchandiseList,
+        merchandise_list: PostedMerchandiseList,
         db: impl Executor<'_, Database = Postgres>,
     ) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
-            "INSERT INTO merchandise_lists
+            r#"INSERT INTO merchandise_lists
             (shop_id, owner_id, form_list, created_at, updated_at)
             VALUES ($1, $2, $3, now(), now())
-            RETURNING *",
+            RETURNING id, shop_id, owner_id, created_at, updated_at,
+                form_list as "form_list: Json<Vec<Merchandise>>""#,
             merchandise_list.shop_id,
             merchandise_list.owner_id,
             serde_json::json!(merchandise_list.form_list),
@@ -118,10 +119,12 @@ impl MerchandiseList {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
                 Self,
-                "SELECT * FROM merchandise_lists
+                r#"SELECT id, shop_id, owner_id, created_at, updated_at,
+                    form_list as "form_list: Json<Vec<Merchandise>>"
+                FROM merchandise_lists
                 ORDER BY $1
                 LIMIT $2
-                OFFSET $3",
+                OFFSET $3"#,
                 order_by,
                 list_params.limit.unwrap_or(10),
                 list_params.offset.unwrap_or(0),
@@ -131,9 +134,11 @@ impl MerchandiseList {
         } else {
             sqlx::query_as!(
                 Self,
-                "SELECT * FROM merchandise_lists
+                r#"SELECT id, shop_id, owner_id, created_at, updated_at,
+                    form_list as "form_list: Json<Vec<Merchandise>>"
+                FROM merchandise_lists
                 LIMIT $1
-                OFFSET $2",
+                OFFSET $2"#,
                 list_params.limit.unwrap_or(10),
                 list_params.offset.unwrap_or(0),
             )
@@ -157,11 +162,12 @@ impl MerchandiseList {
         if existing_merchandise_list.owner_id == owner_id {
             Ok(sqlx::query_as!(
                 Self,
-                "UPDATE merchandise_lists SET
+                r#"UPDATE merchandise_lists SET
                 form_list = $2,
                 updated_at = now()
                 WHERE id = $1
-                RETURNING *",
+                RETURNING id, shop_id, owner_id, created_at, updated_at,
+                    form_list as "form_list: Json<Vec<Merchandise>>""#,
                 id,
                 serde_json::json!(merchandise_list.form_list),
             )
@@ -179,8 +185,10 @@ impl MerchandiseList {
     ) -> Result<Self> {
         sqlx::query_as!(
             Self,
-            "SELECT * FROM merchandise_lists
-            WHERE shop_id = $1",
+            r#"SELECT id, shop_id, owner_id, created_at, updated_at,
+                form_list as "form_list: Json<Vec<Merchandise>>"
+            FROM merchandise_lists
+            WHERE shop_id = $1"#,
             shop_id,
         )
         .fetch_one(db)
@@ -204,11 +212,12 @@ impl MerchandiseList {
         if existing_merchandise_list.owner_id == owner_id {
             Ok(sqlx::query_as!(
                 Self,
-                "UPDATE merchandise_lists SET
+                r#"UPDATE merchandise_lists SET
                 form_list = $2,
                 updated_at = now()
                 WHERE shop_id = $1
-                RETURNING *",
+                RETURNING id, shop_id, owner_id, created_at, updated_at,
+                    form_list as "form_list: Json<Vec<Merchandise>>""#,
                 shop_id,
                 serde_json::json!(merchandise_list.form_list),
             )
@@ -242,7 +251,7 @@ impl MerchandiseList {
         }]);
         Ok(sqlx::query_as!(
             Self,
-            "UPDATE
+            r#"UPDATE
                 merchandise_lists
             SET
                 form_list = CASE
@@ -277,7 +286,13 @@ impl MerchandiseList {
             ) sub
             WHERE
                 shop_id = $1
-            RETURNING merchandise_lists.*",
+            RETURNING
+                merchandise_lists.id,
+                merchandise_lists.shop_id,
+                merchandise_lists.owner_id,
+                merchandise_lists.created_at,
+                merchandise_lists.updated_at,
+                merchandise_lists.form_list as "form_list: Json<Vec<Merchandise>>""#,
             shop_id,
             mod_name,
             &local_form_id.to_string(),

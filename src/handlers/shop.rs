@@ -1,20 +1,22 @@
 use anyhow::{anyhow, Result};
 use http::StatusCode;
+use hyper::body::Bytes;
 use mime::Mime;
 use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
-use crate::caches::CACHES;
+use crate::caches::{CachedResponse, CACHES};
 use crate::models::{
-    InteriorRefList, ListParams, MerchandiseList, PostedShop, Shop, UnsavedInteriorRefList,
-    UnsavedMerchandiseList, UnsavedShop,
+    InteriorRefList, ListParams, MerchandiseList, PostedInteriorRefList, PostedMerchandiseList,
+    PostedShop, Shop,
 };
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
 use super::{
-    authenticate, check_etag, AcceptHeader, Bincode, ContentType, DataReply, ETagReply, Json,
+    authenticate, check_etag, AcceptHeader, Bincode, ContentType, DataReply, DeserializedBody,
+    ETagReply, Json, TypedCache,
 };
 
 pub async fn get(
@@ -23,10 +25,10 @@ pub async fn get(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => (ContentType::Bincode, &CACHES.shop_bin),
-        _ => (ContentType::Json, &CACHES.shop),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<i32, CachedResponse>::pick_cache(accept, &CACHES.shop_bin, &CACHES.shop);
     let response = cache
         .get_response(id, || async {
             let shop = Shop::get(&env.db, id).await?;
@@ -47,10 +49,14 @@ pub async fn list(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => (ContentType::Bincode, &CACHES.list_shops_bin),
-        _ => (ContentType::Json, &CACHES.list_shops),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<ListParams, CachedResponse>::pick_cache(
+        accept,
+        &CACHES.list_shops_bin,
+        &CACHES.list_shops,
+    );
     let response = cache
         .get_response(list_params.clone(), || async {
             let shops = Shop::list(&env.db, &list_params).await?;
@@ -66,44 +72,36 @@ pub async fn list(
 }
 
 pub async fn create(
-    shop: PostedShop,
+    bytes: Bytes,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let content_type = match content_type {
-        Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
-            ContentType::Bincode
-        }
-        _ => ContentType::Json,
-    };
+    let DeserializedBody {
+        body: mut shop,
+        content_type,
+    } = DeserializedBody::<PostedShop>::from_bytes(bytes, content_type).map_err(reject_anyhow)?;
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let unsaved_shop = UnsavedShop {
-        name: shop.name,
-        description: shop.description,
-        owner_id,
-    };
+    shop.owner_id = Some(owner_id);
     let mut tx = env
         .db
         .begin()
         .await
         .map_err(|error| reject_anyhow(anyhow!(error)))?;
-    let saved_shop = Shop::create(unsaved_shop, &mut tx)
-        .await
-        .map_err(reject_anyhow)?;
+    let saved_shop = Shop::create(shop, &mut tx).await.map_err(reject_anyhow)?;
 
     // also save empty interior_ref_list and merchandise_list rows
-    let interior_ref_list = UnsavedInteriorRefList {
+    let interior_ref_list = PostedInteriorRefList {
         shop_id: saved_shop.id,
-        owner_id,
+        owner_id: Some(owner_id),
         ref_list: sqlx::types::Json::default(),
     };
     InteriorRefList::create(interior_ref_list, &mut tx)
         .await
         .map_err(reject_anyhow)?;
-    let merchandise_list = UnsavedMerchandiseList {
+    let merchandise_list = PostedMerchandiseList {
         shop_id: saved_shop.id,
-        owner_id,
+        owner_id: Some(owner_id),
         form_list: sqlx::types::Json::default(),
     };
     MerchandiseList::create(merchandise_list, &mut tx)
@@ -133,27 +131,22 @@ pub async fn create(
 
 pub async fn update(
     id: i32,
-    shop: PostedShop,
+    bytes: Bytes,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let content_type = match content_type {
-        Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
-            ContentType::Bincode
-        }
-        _ => ContentType::Json,
-    };
+    let DeserializedBody {
+        body: mut shop,
+        content_type,
+    } = DeserializedBody::<PostedShop>::from_bytes(bytes, content_type).map_err(reject_anyhow)?;
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let posted_shop = PostedShop {
-        owner_id: match shop.owner_id {
-            // allows an owner to transfer ownership of shop to another owner
-            Some(posted_owner_id) => Some(posted_owner_id),
-            None => Some(owner_id),
-        },
-        ..shop
+    shop.owner_id = match shop.owner_id {
+        // allows an owner to transfer ownership of shop to another owner
+        Some(posted_owner_id) => Some(posted_owner_id),
+        None => Some(owner_id),
     };
-    let updated_shop = Shop::update(posted_shop, &env.db, owner_id, id)
+    let updated_shop = Shop::update(shop, &env.db, owner_id, id)
         .await
         .map_err(reject_anyhow)?;
     let url = updated_shop.url(&env.api_url).map_err(reject_anyhow)?;

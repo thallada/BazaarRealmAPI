@@ -27,21 +27,6 @@ pub struct Transaction {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnsavedTransaction {
-    pub shop_id: i32,
-    pub owner_id: i32,
-    pub mod_name: String,
-    pub local_form_id: i32,
-    pub name: String,
-    pub form_type: i32,
-    pub is_food: bool,
-    pub price: i32,
-    pub is_sell: bool,
-    pub quantity: i32,
-    pub amount: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PostedTransaction {
     pub shop_id: i32,
     pub owner_id: Option<i32>,
@@ -79,7 +64,7 @@ impl Transaction {
 
     #[instrument(level = "debug", skip(db))]
     pub async fn create(
-        transaction: UnsavedTransaction,
+        transaction: PostedTransaction,
         db: impl Executor<'_, Database = Postgres>,
     ) -> Result<Self> {
         Ok(sqlx::query_as!(

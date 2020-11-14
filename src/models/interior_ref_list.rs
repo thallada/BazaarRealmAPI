@@ -9,12 +9,12 @@ use url::Url;
 use super::ListParams;
 use crate::problem::forbidden_permission;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(sqlx::FromRow, Debug, Serialize, Deserialize, Clone)]
 pub struct InteriorRef {
     pub base_mod_name: String,
-    pub base_local_form_id: i32,
+    pub base_local_form_id: u32,
     pub ref_mod_name: Option<String>,
-    pub ref_local_form_id: i32,
+    pub ref_local_form_id: u32,
     pub position_x: f32,
     pub position_y: f32,
     pub position_z: f32,
@@ -24,21 +24,14 @@ pub struct InteriorRef {
     pub scale: u16,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(sqlx::FromRow, Debug, Serialize, Deserialize, Clone)]
 pub struct InteriorRefList {
     pub id: i32,
     pub shop_id: i32,
     pub owner_id: i32,
-    pub ref_list: serde_json::Value,
+    pub ref_list: Json<Vec<InteriorRef>>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnsavedInteriorRefList {
-    pub shop_id: i32,
-    pub owner_id: i32,
-    pub ref_list: Json<Vec<InteriorRef>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -64,23 +57,30 @@ impl InteriorRefList {
     // TODO: this model will probably never need to be accessed through it's ID, should these methods be removed/unimplemented?
     #[instrument(level = "debug", skip(db))]
     pub async fn get(db: impl Executor<'_, Database = Postgres>, id: i32) -> Result<Self> {
-        sqlx::query_as!(Self, "SELECT * FROM interior_ref_lists WHERE id = $1", id)
-            .fetch_one(db)
-            .await
-            .map_err(Error::new)
+        sqlx::query_as!(
+            Self,
+            r#"SELECT id, shop_id, owner_id, created_at, updated_at,
+                   ref_list as "ref_list: Json<Vec<InteriorRef>>"
+               FROM interior_ref_lists WHERE id = $1"#,
+            id
+        )
+        .fetch_one(db)
+        .await
+        .map_err(Error::new)
     }
 
     #[instrument(level = "debug", skip(interior_ref_list, db))]
     pub async fn create(
-        interior_ref_list: UnsavedInteriorRefList,
+        interior_ref_list: PostedInteriorRefList,
         db: impl Executor<'_, Database = Postgres>,
     ) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
-            "INSERT INTO interior_ref_lists
-            (shop_id, owner_id, ref_list, created_at, updated_at)
+            r#"INSERT INTO interior_ref_lists
+                (shop_id, owner_id, ref_list, created_at, updated_at)
             VALUES ($1, $2, $3, now(), now())
-            RETURNING *",
+            RETURNING id, shop_id, owner_id, created_at, updated_at,
+                ref_list as "ref_list: Json<Vec<InteriorRef>>""#,
             interior_ref_list.shop_id,
             interior_ref_list.owner_id,
             serde_json::json!(interior_ref_list.ref_list),
@@ -119,10 +119,11 @@ impl InteriorRefList {
         let result = if let Some(order_by) = list_params.get_order_by() {
             sqlx::query_as!(
                 Self,
-                "SELECT * FROM interior_ref_lists
+                r#"SELECT id, shop_id, owner_id, created_at, updated_at,
+                    ref_list as "ref_list: Json<Vec<InteriorRef>>" FROM interior_ref_lists
                 ORDER BY $1
                 LIMIT $2
-                OFFSET $3",
+                OFFSET $3"#,
                 order_by,
                 list_params.limit.unwrap_or(10),
                 list_params.offset.unwrap_or(0),
@@ -132,9 +133,10 @@ impl InteriorRefList {
         } else {
             sqlx::query_as!(
                 Self,
-                "SELECT * FROM interior_ref_lists
+                r#"SELECT id, shop_id, owner_id, created_at, updated_at,
+                    ref_list as "ref_list: Json<Vec<InteriorRef>>" FROM interior_ref_lists
                 LIMIT $1
-                OFFSET $2",
+                OFFSET $2"#,
                 list_params.limit.unwrap_or(10),
                 list_params.offset.unwrap_or(0),
             )
@@ -158,11 +160,12 @@ impl InteriorRefList {
         if existing_interior_ref_list.owner_id == owner_id {
             Ok(sqlx::query_as!(
                 Self,
-                "UPDATE interior_ref_lists SET
+                r#"UPDATE interior_ref_lists SET
                 ref_list = $2,
                 updated_at = now()
                 WHERE id = $1
-                RETURNING *",
+                RETURNING id, shop_id, owner_id, created_at, updated_at,
+                    ref_list as "ref_list: Json<Vec<InteriorRef>>""#,
                 id,
                 serde_json::json!(interior_ref_list.ref_list),
             )
@@ -180,8 +183,9 @@ impl InteriorRefList {
     ) -> Result<Self> {
         sqlx::query_as!(
             Self,
-            "SELECT * FROM interior_ref_lists
-            WHERE shop_id = $1",
+            r#"SELECT id, shop_id, owner_id, created_at, updated_at,
+                ref_list as "ref_list: Json<Vec<InteriorRef>>" FROM interior_ref_lists
+            WHERE shop_id = $1"#,
             shop_id,
         )
         .fetch_one(db)
@@ -205,11 +209,12 @@ impl InteriorRefList {
         if existing_interior_ref_list.owner_id == owner_id {
             Ok(sqlx::query_as!(
                 Self,
-                "UPDATE interior_ref_lists SET
+                r#"UPDATE interior_ref_lists SET
                 ref_list = $2,
                 updated_at = now()
                 WHERE shop_id = $1
-                RETURNING *",
+                RETURNING id, shop_id, owner_id, created_at, updated_at,
+                    ref_list as "ref_list: Json<Vec<InteriorRef>>""#,
                 shop_id,
                 serde_json::json!(interior_ref_list.ref_list),
             )

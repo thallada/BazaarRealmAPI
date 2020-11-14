@@ -1,17 +1,19 @@
 use anyhow::Result;
 use http::StatusCode;
+use hyper::body::Bytes;
 use mime::Mime;
 use uuid::Uuid;
 use warp::reply::{with_header, with_status};
 use warp::{Rejection, Reply};
 
-use crate::caches::CACHES;
-use crate::models::{InteriorRefList, ListParams, PostedInteriorRefList, UnsavedInteriorRefList};
+use crate::caches::{CachedResponse, CACHES};
+use crate::models::{InteriorRefList, ListParams, PostedInteriorRefList};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
 use super::{
-    authenticate, check_etag, AcceptHeader, Bincode, ContentType, DataReply, ETagReply, Json,
+    authenticate, check_etag, AcceptHeader, Bincode, ContentType, DataReply, DeserializedBody,
+    ETagReply, Json, TypedCache,
 };
 
 pub async fn get(
@@ -20,12 +22,14 @@ pub async fn get(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => {
-            (ContentType::Bincode, &CACHES.interior_ref_list_bin)
-        }
-        _ => (ContentType::Json, &CACHES.interior_ref_list),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<i32, CachedResponse>::pick_cache(
+        accept,
+        &CACHES.interior_ref_list_bin,
+        &CACHES.interior_ref_list,
+    );
     let response = cache
         .get_response(id, || async {
             let interior_ref_list = InteriorRefList::get(&env.db, id).await?;
@@ -50,13 +54,14 @@ pub async fn get_by_shop_id(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => (
-            ContentType::Bincode,
-            &CACHES.interior_ref_list_by_shop_id_bin,
-        ),
-        _ => (ContentType::Json, &CACHES.interior_ref_list_by_shop_id),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<i32, CachedResponse>::pick_cache(
+        accept,
+        &CACHES.interior_ref_list_by_shop_id_bin,
+        &CACHES.interior_ref_list_by_shop_id,
+    );
     let response = cache
         .get_response(shop_id, || async {
             let interior_ref_list = InteriorRefList::get_by_shop_id(&env.db, shop_id).await?;
@@ -81,12 +86,14 @@ pub async fn list(
     accept: Option<AcceptHeader>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let (content_type, cache) = match accept {
-        Some(accept) if accept.accepts_bincode() => {
-            (ContentType::Bincode, &CACHES.list_interior_ref_lists_bin)
-        }
-        _ => (ContentType::Json, &CACHES.list_interior_ref_lists),
-    };
+    let TypedCache {
+        content_type,
+        cache,
+    } = TypedCache::<ListParams, CachedResponse>::pick_cache(
+        accept,
+        &CACHES.list_interior_ref_lists_bin,
+        &CACHES.list_interior_ref_lists,
+    );
     let response = cache
         .get_response(list_params.clone(), || async {
             let interior_ref_lists = InteriorRefList::list(&env.db, &list_params).await?;
@@ -107,24 +114,19 @@ pub async fn list(
 }
 
 pub async fn create(
-    interior_ref_list: PostedInteriorRefList,
+    bytes: Bytes,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let content_type = match content_type {
-        Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
-            ContentType::Bincode
-        }
-        _ => ContentType::Json,
-    };
+    let DeserializedBody {
+        body: mut interior_ref_list,
+        content_type,
+    } = DeserializedBody::<PostedInteriorRefList>::from_bytes(bytes, content_type)
+        .map_err(reject_anyhow)?;
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
-    let unsaved_interior_ref_list = UnsavedInteriorRefList {
-        owner_id,
-        shop_id: interior_ref_list.shop_id,
-        ref_list: interior_ref_list.ref_list,
-    };
-    let saved_interior_ref_list = InteriorRefList::create(unsaved_interior_ref_list, &env.db)
+    interior_ref_list.owner_id = Some(owner_id);
+    let saved_interior_ref_list = InteriorRefList::create(interior_ref_list, &env.db)
         .await
         .map_err(reject_anyhow)?;
     let url = saved_interior_ref_list
@@ -159,17 +161,16 @@ pub async fn create(
 
 pub async fn update(
     id: i32,
-    interior_ref_list: PostedInteriorRefList,
+    bytes: Bytes,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let content_type = match content_type {
-        Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
-            ContentType::Bincode
-        }
-        _ => ContentType::Json,
-    };
+    let DeserializedBody {
+        body: interior_ref_list,
+        content_type,
+    } = DeserializedBody::<PostedInteriorRefList>::from_bytes(bytes, content_type)
+        .map_err(reject_anyhow)?;
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
     let updated_interior_ref_list =
         InteriorRefList::update(interior_ref_list, &env.db, owner_id, id)
@@ -209,17 +210,16 @@ pub async fn update(
 
 pub async fn update_by_shop_id(
     shop_id: i32,
-    interior_ref_list: PostedInteriorRefList,
+    bytes: Bytes,
     api_key: Option<Uuid>,
     content_type: Option<Mime>,
     env: Environment,
 ) -> Result<impl Reply, Rejection> {
-    let content_type = match content_type {
-        Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
-            ContentType::Bincode
-        }
-        _ => ContentType::Json,
-    };
+    let DeserializedBody {
+        body: interior_ref_list,
+        content_type,
+    } = DeserializedBody::<PostedInteriorRefList>::from_bytes(bytes, content_type)
+        .map_err(reject_anyhow)?;
     let owner_id = authenticate(&env, api_key).await.map_err(reject_anyhow)?;
     let updated_interior_ref_list =
         InteriorRefList::update_by_shop_id(interior_ref_list, &env.db, owner_id, shop_id)

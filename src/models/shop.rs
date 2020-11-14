@@ -19,13 +19,6 @@ pub struct Shop {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnsavedShop {
-    pub name: String,
-    pub owner_id: i32,
-    pub description: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PostedShop {
     pub name: String,
     pub owner_id: Option<i32>,
@@ -55,7 +48,7 @@ impl Shop {
 
     #[instrument(level = "debug", skip(shop, db))]
     pub async fn create(
-        shop: UnsavedShop,
+        shop: PostedShop,
         db: impl Executor<'_, Database = Postgres>,
     ) -> Result<Self> {
         Ok(sqlx::query_as!(

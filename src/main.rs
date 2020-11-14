@@ -4,9 +4,8 @@ extern crate lazy_static;
 use anyhow::Result;
 use dotenv::dotenv;
 use http::header::SERVER;
-use hyper::server::Server;
+use hyper::{body::Bytes, server::Server};
 use listenfd::ListenFd;
-use serde::{de::DeserializeOwned, Serialize};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{migrate, Pool, Postgres};
 use std::convert::Infallible;
@@ -24,10 +23,7 @@ mod models;
 mod problem;
 
 use handlers::SERVER_STRING;
-use models::{
-    ListParams, PostedInteriorRefList, PostedMerchandiseList, PostedOwner, PostedShop,
-    PostedTransaction,
-};
+use models::ListParams;
 
 #[derive(Debug, Clone)]
 pub struct Environment {
@@ -47,21 +43,12 @@ impl Environment {
     }
 }
 
-#[derive(Serialize)]
-struct ErrorMessage {
-    code: u16,
-    message: String,
-}
-
 fn with_env(env: Environment) -> impl Filter<Extract = (Environment,), Error = Infallible> + Clone {
     warp::any().map(move || env.clone())
 }
 
-fn json_body<T>() -> impl Filter<Extract = (T,), Error = warp::Rejection> + Clone
-where
-    T: Send + DeserializeOwned,
-{
-    warp::body::content_length_limit(1024 * 1024).and(warp::body::json())
+fn extract_body_bytes() -> impl Filter<Extract = (Bytes,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(1024 * 1024).and(warp::body::bytes())
 }
 
 #[tokio::main]
@@ -100,7 +87,7 @@ async fn main() -> Result<()> {
     let create_owner_handler = warp::path("owners").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<PostedOwner>())
+            .and(extract_body_bytes())
             .and(warp::addr::remote())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("x-real-ip"))
@@ -120,7 +107,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<PostedOwner>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -147,7 +134,7 @@ async fn main() -> Result<()> {
     let create_shop_handler = warp::path("shops").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<PostedShop>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -165,7 +152,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<PostedShop>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -192,7 +179,7 @@ async fn main() -> Result<()> {
     let create_interior_ref_list_handler = warp::path("interior_ref_lists").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<PostedInteriorRefList>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -210,7 +197,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<PostedInteriorRefList>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -221,7 +208,7 @@ async fn main() -> Result<()> {
             .and(warp::path("interior_ref_list"))
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<PostedInteriorRefList>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -258,7 +245,7 @@ async fn main() -> Result<()> {
     let create_merchandise_list_handler = warp::path("merchandise_lists").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<PostedMerchandiseList>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -276,7 +263,7 @@ async fn main() -> Result<()> {
         warp::path::param()
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<PostedMerchandiseList>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -287,7 +274,7 @@ async fn main() -> Result<()> {
             .and(warp::path("merchandise_list"))
             .and(warp::path::end())
             .and(warp::patch())
-            .and(json_body::<PostedMerchandiseList>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))
@@ -324,7 +311,7 @@ async fn main() -> Result<()> {
     let create_transaction_handler = warp::path("transactions").and(
         warp::path::end()
             .and(warp::post())
-            .and(json_body::<PostedTransaction>())
+            .and(extract_body_bytes())
             .and(warp::header::optional("api-key"))
             .and(warp::header::optional("content-type"))
             .and(with_env(env.clone()))

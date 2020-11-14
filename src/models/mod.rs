@@ -9,12 +9,12 @@ pub mod owner;
 pub mod shop;
 pub mod transaction;
 
-pub use interior_ref_list::{InteriorRefList, PostedInteriorRefList, UnsavedInteriorRefList};
-pub use merchandise_list::{MerchandiseList, PostedMerchandiseList, UnsavedMerchandiseList};
+pub use interior_ref_list::{InteriorRefList, PostedInteriorRefList};
+pub use merchandise_list::{MerchandiseList, PostedMerchandiseList};
 pub use model::{Model, UpdateableModel};
-pub use owner::{Owner, PostedOwner, UnsavedOwner};
-pub use shop::{PostedShop, Shop, UnsavedShop};
-pub use transaction::{PostedTransaction, Transaction, UnsavedTransaction};
+pub use owner::{FullPostedOwner, Owner, PostedOwner};
+pub use shop::{PostedShop, Shop};
+pub use transaction::{PostedTransaction, Transaction};
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Deserialize)]
 pub enum Order {

@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+use std::hash::Hash;
 use std::marker::PhantomData;
 use std::str::FromStr;
 
@@ -5,10 +7,11 @@ use anyhow::{anyhow, Error, Result};
 use http::header::{HeaderValue, CONTENT_TYPE, ETAG, SERVER};
 use http::StatusCode;
 use http_api_problem::HttpApiProblem;
+use hyper::body::Bytes;
 use mime::{FromStrError, Mime};
 use seahash::hash;
-use serde::Serialize;
-use tracing::{error, instrument, warn};
+use serde::{de::DeserializeOwned, Serialize};
+use tracing::{debug, error, instrument, warn};
 use uuid::Uuid;
 use warp::reply::Response;
 use warp::Reply;
@@ -19,7 +22,7 @@ pub mod owner;
 pub mod shop;
 pub mod transaction;
 
-use super::caches::{CachedResponse, CACHES};
+use super::caches::{Cache, CachedResponse, CACHES};
 use super::problem::{unauthorized_no_api_key, unauthorized_no_owner};
 use super::Environment;
 
@@ -182,5 +185,78 @@ impl FromStr for AcceptHeader {
 impl AcceptHeader {
     pub fn accepts_bincode(&self) -> bool {
         self.mimes.contains(&mime::APPLICATION_OCTET_STREAM)
+    }
+}
+
+pub struct DeserializedBody<T> {
+    body: T,
+    content_type: ContentType,
+}
+
+impl<T: DeserializeOwned> DeserializedBody<T> {
+    pub fn from_bytes(bytes: Bytes, content_type: Option<Mime>) -> Result<Self> {
+        match content_type {
+            Some(content_type) if content_type == mime::APPLICATION_OCTET_STREAM => {
+                debug!(
+                    content_type = ?ContentType::Bincode,
+                    "deserializing body as bincode"
+                );
+                Ok(Self {
+                    content_type: ContentType::Bincode,
+                    body: bincode::deserialize(&bytes)?,
+                })
+            }
+            _ => {
+                debug!(
+                    content_type = ?ContentType::Json,
+                    "deserializing body as json"
+                );
+                Ok(Self {
+                    content_type: ContentType::Json,
+                    body: serde_json::from_slice(&bytes)?,
+                })
+            }
+        }
+    }
+}
+
+pub struct TypedCache<'a, K, V>
+where
+    K: Eq + Hash + Debug,
+    V: Clone,
+{
+    cache: &'a Cache<K, V>,
+    content_type: ContentType,
+}
+
+impl<'a, K, V> TypedCache<'a, K, V>
+where
+    K: Eq + Hash + Debug,
+    V: Clone,
+{
+    pub fn pick_cache(
+        accept: Option<AcceptHeader>,
+        bincode_cache: &'a Cache<K, V>,
+        json_cache: &'a Cache<K, V>,
+    ) -> Self {
+        match accept {
+            Some(accept) if accept.accepts_bincode() => {
+                debug!(
+                    content_type = ?ContentType::Bincode,
+                    "serializing body as bincode"
+                );
+                Self {
+                    content_type: ContentType::Bincode,
+                    cache: bincode_cache,
+                }
+            }
+            _ => {
+                debug!(content_type = ?ContentType::Json, "serializing body as json");
+                Self {
+                    content_type: ContentType::Json,
+                    cache: json_cache,
+                }
+            }
+        }
     }
 }
