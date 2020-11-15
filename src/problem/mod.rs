@@ -152,6 +152,20 @@ pub fn from_anyhow(error: anyhow::Error) -> HttpApiProblem {
 }
 
 pub async fn unpack_problem(rejection: Rejection) -> Result<impl Reply, Rejection> {
+    if rejection.is_not_found() {
+        let reply = warp::reply::json(&HttpApiProblem::with_title_and_type_from_status(
+            StatusCode::NOT_FOUND,
+        ));
+        let reply = warp::reply::with_status(reply, StatusCode::NOT_FOUND);
+        let reply = warp::reply::with_header(
+            reply,
+            warp::http::header::CONTENT_TYPE,
+            http_api_problem::PROBLEM_JSON_MEDIA_TYPE,
+        );
+
+        return Ok(reply);
+    }
+
     if let Some(problem) = rejection.find::<HttpApiProblem>() {
         let code = problem.status.unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
 
