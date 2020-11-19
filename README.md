@@ -195,7 +195,8 @@ A new migration can be created by running: `sqlx migrate add <name>`.
 
 To allow the docker container for the API to get built in CI without a
 database, the `sqlx-data.json` file needs to be re-generated every time the
-database schema changes. It can be generated with `cargo sqlx prepare`.
+database schema changes or any query is updated. It can be generated with `cargo 
+sqlx prepare`.
 
 ## Authentication
 

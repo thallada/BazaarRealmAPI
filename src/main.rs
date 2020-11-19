@@ -58,10 +58,11 @@ async fn main() -> Result<()> {
     let env_log_filter =
         env::var("RUST_LOG").unwrap_or_else(|_| "warp=info,bazaar_realm_api=info".to_owned());
 
+    let (non_blocking_writer, _guard) = tracing_appender::non_blocking(std::io::stdout());
     tracing_subscriber::fmt()
         .with_env_filter(env_log_filter)
         .with_span_events(FmtSpan::CLOSE)
-        .with_writer(std::io::stdout)
+        .with_writer(non_blocking_writer)
         .init();
 
     let host = env::var("HOST").expect("`HOST` environment variable not defined");
