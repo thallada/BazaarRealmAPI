@@ -95,6 +95,7 @@ pub async fn create(
         shop_id: saved_shop.id,
         owner_id: Some(owner_id),
         ref_list: sqlx::types::Json::default(),
+        shelves: sqlx::types::Json::default(),
     };
     InteriorRefList::create(interior_ref_list, &mut tx)
         .await

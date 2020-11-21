@@ -25,11 +25,30 @@ pub struct InteriorRef {
 }
 
 #[derive(sqlx::FromRow, Debug, Serialize, Deserialize, Clone)]
+pub struct Shelf {
+    pub shelf_type: u32,
+    pub position_x: f32,
+    pub position_y: f32,
+    pub position_z: f32,
+    pub angle_x: f32,
+    pub angle_y: f32,
+    pub angle_z: f32,
+    pub scale: u16,
+    pub page: u32,
+    pub filter_form_type: Option<u32>,
+    pub filter_is_food: bool,
+    pub search: Option<String>,
+    pub sort_on: Option<String>,
+    pub sort_asc: bool,
+}
+
+#[derive(sqlx::FromRow, Debug, Serialize, Deserialize, Clone)]
 pub struct InteriorRefList {
     pub id: i32,
     pub shop_id: i32,
     pub owner_id: i32,
     pub ref_list: Json<Vec<InteriorRef>>,
+    pub shelves: Json<Vec<Shelf>>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -39,6 +58,7 @@ pub struct PostedInteriorRefList {
     pub shop_id: i32,
     pub owner_id: Option<i32>,
     pub ref_list: Json<Vec<InteriorRef>>,
+    pub shelves: Json<Vec<Shelf>>,
 }
 
 impl InteriorRefList {
@@ -60,7 +80,8 @@ impl InteriorRefList {
         sqlx::query_as!(
             Self,
             r#"SELECT id, shop_id, owner_id, created_at, updated_at,
-                   ref_list as "ref_list: Json<Vec<InteriorRef>>"
+                   ref_list as "ref_list: Json<Vec<InteriorRef>>",
+                   shelves as "shelves: Json<Vec<Shelf>>"
                FROM interior_ref_lists WHERE id = $1"#,
             id
         )
@@ -77,13 +98,15 @@ impl InteriorRefList {
         Ok(sqlx::query_as!(
             Self,
             r#"INSERT INTO interior_ref_lists
-                (shop_id, owner_id, ref_list, created_at, updated_at)
-            VALUES ($1, $2, $3, now(), now())
+                (shop_id, owner_id, ref_list, shelves, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, now(), now())
             RETURNING id, shop_id, owner_id, created_at, updated_at,
-                ref_list as "ref_list: Json<Vec<InteriorRef>>""#,
+                ref_list as "ref_list: Json<Vec<InteriorRef>>",
+                shelves as "shelves: Json<Vec<Shelf>>""#,
             interior_ref_list.shop_id,
             interior_ref_list.owner_id,
             serde_json::json!(interior_ref_list.ref_list),
+            serde_json::json!(interior_ref_list.shelves),
         )
         .fetch_one(db)
         .await?)
@@ -120,7 +143,8 @@ impl InteriorRefList {
             sqlx::query_as!(
                 Self,
                 r#"SELECT id, shop_id, owner_id, created_at, updated_at,
-                    ref_list as "ref_list: Json<Vec<InteriorRef>>" FROM interior_ref_lists
+                    ref_list as "ref_list: Json<Vec<InteriorRef>>",
+                    shelves as "shelves: Json<Vec<Shelf>>" FROM interior_ref_lists
                 ORDER BY $1
                 LIMIT $2
                 OFFSET $3"#,
@@ -134,7 +158,8 @@ impl InteriorRefList {
             sqlx::query_as!(
                 Self,
                 r#"SELECT id, shop_id, owner_id, created_at, updated_at,
-                    ref_list as "ref_list: Json<Vec<InteriorRef>>" FROM interior_ref_lists
+                    ref_list as "ref_list: Json<Vec<InteriorRef>>",
+                    shelves as "shelves: Json<Vec<Shelf>>" FROM interior_ref_lists
                 LIMIT $1
                 OFFSET $2"#,
                 list_params.limit.unwrap_or(10),
@@ -162,12 +187,15 @@ impl InteriorRefList {
                 Self,
                 r#"UPDATE interior_ref_lists SET
                 ref_list = $2,
+                shelves = $3,
                 updated_at = now()
                 WHERE id = $1
                 RETURNING id, shop_id, owner_id, created_at, updated_at,
-                    ref_list as "ref_list: Json<Vec<InteriorRef>>""#,
+                    ref_list as "ref_list: Json<Vec<InteriorRef>>",
+                    shelves as "shelves: Json<Vec<Shelf>>""#,
                 id,
                 serde_json::json!(interior_ref_list.ref_list),
+                serde_json::json!(interior_ref_list.shelves),
             )
             .fetch_one(db)
             .await?)
@@ -184,7 +212,8 @@ impl InteriorRefList {
         sqlx::query_as!(
             Self,
             r#"SELECT id, shop_id, owner_id, created_at, updated_at,
-                ref_list as "ref_list: Json<Vec<InteriorRef>>" FROM interior_ref_lists
+                ref_list as "ref_list: Json<Vec<InteriorRef>>",
+                shelves as "shelves: Json<Vec<Shelf>>" FROM interior_ref_lists
             WHERE shop_id = $1"#,
             shop_id,
         )
@@ -211,12 +240,15 @@ impl InteriorRefList {
                 Self,
                 r#"UPDATE interior_ref_lists SET
                 ref_list = $2,
+                shelves = $3,
                 updated_at = now()
                 WHERE shop_id = $1
                 RETURNING id, shop_id, owner_id, created_at, updated_at,
-                    ref_list as "ref_list: Json<Vec<InteriorRef>>""#,
+                    ref_list as "ref_list: Json<Vec<InteriorRef>>",
+                    shelves as "shelves: Json<Vec<Shelf>>""#,
                 shop_id,
                 serde_json::json!(interior_ref_list.ref_list),
+                serde_json::json!(interior_ref_list.shelves),
             )
             .fetch_one(db)
             .await?)

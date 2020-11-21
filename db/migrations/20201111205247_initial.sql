@@ -22,6 +22,7 @@ CREATE TABLE "interior_ref_lists" (
     "shop_id" INTEGER REFERENCES "shops"(id) NOT NULL UNIQUE,
     "owner_id" INTEGER REFERENCES "owners"(id) NOT NULL,
     "ref_list" jsonb NOT NULL,
+    "shelves" jsonb NOT NULL,
     "created_at" timestamp(3) NOT NULL,
     "updated_at" timestamp(3) NOT NULL
 );

@@ -137,10 +137,9 @@ PORT=3030
 4. Install
    [`sqlx_cli`](https://github.com/launchbadge/sqlx/tree/master/sqlx-cli) with
    `cargo install --version=0.1.0-beta.1 sqlx-cli --no-default-features --features postgres`
-5. `cd db` to enter the `db` sub-directory of this repo.
-6. Run `sqlx migrate run` which will run all the database migrations.
-7. `cd ..` to return to the top-level directory of this repo.
-8. Run `./devserver.sh` to run the dev server (by default it listens at
+5. Run `sqlx migrate --source db/migrations run` which will run all the database 
+   migrations.
+6. Run `./devserver.sh` to run the dev server (by default it listens at
    `127.0.0.1:3030`). Note that this runs the server in debug mode and shouldn't
    be used to serve requests from the mod. You can build the release version of
    the server with `cargo build --release`.

@@ -2602,5 +2602,23 @@
       "angle_z": 1.006,
       "scale": 1
     }
+  ],
+  "shelves": [
+    {
+      "shelf_type": 1,
+      "position_x": 1.001,
+      "position_y": 1.002,
+      "position_z": 1.003,
+      "angle_x": 1.004,
+      "angle_y": 1.005,
+      "angle_z": 1.006,
+      "scale": 1,
+      "page": 1,
+      "filter_form_type": null,
+      "filter_is_food": false,
+      "search": null,
+      "sort_on": null,
+      "sort_asc": true
+    }
   ]
 }
