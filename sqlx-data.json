@@ -701,6 +701,62 @@
       ]
     }
   },
+  "334d83dfbfdd4f4dc26661512574c338f9a74bd3848c7668ae60e82fb8a04562": {
+    "query": "SELECT id, shop_id, owner_id, created_at, updated_at,\n                   ref_list as \"ref_list: Json<Vec<InteriorRef>>\",\n                   shelves as \"shelves: Json<Vec<Shelf>>\"\n               FROM interior_ref_lists WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "shop_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "owner_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 4,
+          "name": "updated_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 5,
+          "name": "ref_list: Json<Vec<InteriorRef>>",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 6,
+          "name": "shelves: Json<Vec<Shelf>>",
+          "type_info": "Jsonb"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "342d488885597de00f8fceb0271912018aace0bb9cbbb7ac0694ac50aa0f400b": {
     "query": "SELECT * FROM owners WHERE id = $1",
     "describe": {
@@ -767,58 +823,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "3cb39683def9adcb939be99b4e9ec1beea2237270ebafa74ffb7cbe075ee1616": {
-    "query": "INSERT INTO interior_ref_lists\n                (shop_id, owner_id, ref_list, created_at, updated_at)\n            VALUES ($1, $2, $3, now(), now())\n            RETURNING id, shop_id, owner_id, created_at, updated_at,\n                ref_list as \"ref_list: Json<Vec<InteriorRef>>\"",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 1,
-          "name": "shop_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 2,
-          "name": "owner_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 3,
-          "name": "created_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 4,
-          "name": "updated_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 5,
-          "name": "ref_list: Json<Vec<InteriorRef>>",
-          "type_info": "Jsonb"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int4",
-          "Int4",
-          "Jsonb"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
     }
   },
   "3e2039164c19bd40e43c6ee27813d04ec8f0e921812c50d3a447457be79f76fe": {
@@ -889,56 +893,6 @@
         ]
       },
       "nullable": [
-        false
-      ]
-    }
-  },
-  "43c5d8d227330cf32d48e2af47abccd0e2bcfa21fb2d9c934a88eed6c1fe7dbf": {
-    "query": "SELECT id, shop_id, owner_id, created_at, updated_at,\n                   ref_list as \"ref_list: Json<Vec<InteriorRef>>\"\n               FROM interior_ref_lists WHERE id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 1,
-          "name": "shop_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 2,
-          "name": "owner_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 3,
-          "name": "created_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 4,
-          "name": "updated_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 5,
-          "name": "ref_list: Json<Vec<InteriorRef>>",
-          "type_info": "Jsonb"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int4"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
         false
       ]
     }
@@ -1105,8 +1059,20 @@
       ]
     }
   },
-  "5436dd31f336b2817d08a2a774c8fbad9263dd70304a9e1e67728fa7a60d6a5b": {
-    "query": "SELECT id, shop_id, owner_id, created_at, updated_at,\n                    ref_list as \"ref_list: Json<Vec<InteriorRef>>\" FROM interior_ref_lists\n                ORDER BY $1\n                LIMIT $2\n                OFFSET $3",
+  "5aede784b792452a00c7353c6f947c6ea7b5eece3bff59a766b5f27c9daeea69": {
+    "query": "DELETE FROM interior_ref_lists WHERE id = $1",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "5e8fca6219b0ea4badf5aa459e94581063338930f5b29dd5396a8022d9aaca8d": {
+    "query": "SELECT id, shop_id, owner_id, created_at, updated_at,\n                    ref_list as \"ref_list: Json<Vec<InteriorRef>>\",\n                    shelves as \"shelves: Json<Vec<Shelf>>\" FROM interior_ref_lists\n                ORDER BY $1\n                LIMIT $2\n                OFFSET $3",
     "describe": {
       "columns": [
         {
@@ -1137,6 +1103,11 @@
         {
           "ordinal": 5,
           "name": "ref_list: Json<Vec<InteriorRef>>",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 6,
+          "name": "shelves: Json<Vec<Shelf>>",
           "type_info": "Jsonb"
         }
       ],
@@ -1153,24 +1124,13 @@
         false,
         false,
         false,
+        false,
         false
       ]
     }
   },
-  "5aede784b792452a00c7353c6f947c6ea7b5eece3bff59a766b5f27c9daeea69": {
-    "query": "DELETE FROM interior_ref_lists WHERE id = $1",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Int4"
-        ]
-      },
-      "nullable": []
-    }
-  },
-  "696990c0b04c4fbb2b198c369c52dac2626a9aae78c22c5bc50805612c6c4b8f": {
-    "query": "UPDATE interior_ref_lists SET\n                ref_list = $2,\n                updated_at = now()\n                WHERE shop_id = $1\n                RETURNING id, shop_id, owner_id, created_at, updated_at,\n                    ref_list as \"ref_list: Json<Vec<InteriorRef>>\"",
+  "62c74ebdaaf89f3fa41fee68304833edcdd5b67b63032943a056cd4a94dd79e3": {
+    "query": "INSERT INTO interior_ref_lists\n                (shop_id, owner_id, ref_list, shelves, created_at, updated_at)\n            VALUES ($1, $2, $3, $4, now(), now())\n            RETURNING id, shop_id, owner_id, created_at, updated_at,\n                ref_list as \"ref_list: Json<Vec<InteriorRef>>\",\n                shelves as \"shelves: Json<Vec<Shelf>>\"",
     "describe": {
       "columns": [
         {
@@ -1201,117 +1161,24 @@
         {
           "ordinal": 5,
           "name": "ref_list: Json<Vec<InteriorRef>>",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 6,
+          "name": "shelves: Json<Vec<Shelf>>",
           "type_info": "Jsonb"
         }
       ],
       "parameters": {
         "Left": [
           "Int4",
-          "Jsonb"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "697569c5b6f4b01994ef6fc4f55d9e6576fa7f4da8366f0315a42bc32b40ea60": {
-    "query": "UPDATE interior_ref_lists SET\n                ref_list = $2,\n                updated_at = now()\n                WHERE id = $1\n                RETURNING id, shop_id, owner_id, created_at, updated_at,\n                    ref_list as \"ref_list: Json<Vec<InteriorRef>>\"",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 1,
-          "name": "shop_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 2,
-          "name": "owner_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 3,
-          "name": "created_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 4,
-          "name": "updated_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 5,
-          "name": "ref_list: Json<Vec<InteriorRef>>",
-          "type_info": "Jsonb"
-        }
-      ],
-      "parameters": {
-        "Left": [
           "Int4",
+          "Jsonb",
           "Jsonb"
         ]
       },
       "nullable": [
         false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "69d40b3f324f4a6bd5e77ff5ebef0986022c8b89df94d33301cd574d703ac240": {
-    "query": "SELECT id, shop_id, owner_id, created_at, updated_at,\n                ref_list as \"ref_list: Json<Vec<InteriorRef>>\" FROM interior_ref_lists\n            WHERE shop_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 1,
-          "name": "shop_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 2,
-          "name": "owner_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 3,
-          "name": "created_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 4,
-          "name": "updated_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 5,
-          "name": "ref_list: Json<Vec<InteriorRef>>",
-          "type_info": "Jsonb"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int4"
-        ]
-      },
-      "nullable": [
         false,
         false,
         false,
@@ -1424,6 +1291,64 @@
         false,
         false,
         true,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "761f12fc37de69836037add2ddbd7c6611884abdd852009d6fc516b778cd1eb2": {
+    "query": "UPDATE interior_ref_lists SET\n                ref_list = $2,\n                shelves = $3,\n                updated_at = now()\n                WHERE shop_id = $1\n                RETURNING id, shop_id, owner_id, created_at, updated_at,\n                    ref_list as \"ref_list: Json<Vec<InteriorRef>>\",\n                    shelves as \"shelves: Json<Vec<Shelf>>\"",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "shop_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "owner_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 4,
+          "name": "updated_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 5,
+          "name": "ref_list: Json<Vec<InteriorRef>>",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 6,
+          "name": "shelves: Json<Vec<Shelf>>",
+          "type_info": "Jsonb"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Jsonb",
+          "Jsonb"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
         false,
         false,
         false
@@ -1572,6 +1497,64 @@
         false,
         false,
         false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "8e3037956b5c03df157c372a9c82a80bd294fc9207cd75800ffdb1b18b32e4cd": {
+    "query": "UPDATE interior_ref_lists SET\n                ref_list = $2,\n                shelves = $3,\n                updated_at = now()\n                WHERE id = $1\n                RETURNING id, shop_id, owner_id, created_at, updated_at,\n                    ref_list as \"ref_list: Json<Vec<InteriorRef>>\",\n                    shelves as \"shelves: Json<Vec<Shelf>>\"",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "shop_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "owner_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 4,
+          "name": "updated_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 5,
+          "name": "ref_list: Json<Vec<InteriorRef>>",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 6,
+          "name": "shelves: Json<Vec<Shelf>>",
+          "type_info": "Jsonb"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Jsonb",
+          "Jsonb"
+        ]
+      },
+      "nullable": [
         false,
         false,
         false,
@@ -1810,6 +1793,63 @@
       ]
     }
   },
+  "b8638396372779b8595e9279f319ab4ffd39e4a21a0e9c474094d0a1cb8b6159": {
+    "query": "SELECT id, shop_id, owner_id, created_at, updated_at,\n                    ref_list as \"ref_list: Json<Vec<InteriorRef>>\",\n                    shelves as \"shelves: Json<Vec<Shelf>>\" FROM interior_ref_lists\n                LIMIT $1\n                OFFSET $2",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "shop_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "owner_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 4,
+          "name": "updated_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 5,
+          "name": "ref_list: Json<Vec<InteriorRef>>",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 6,
+          "name": "shelves: Json<Vec<Shelf>>",
+          "type_info": "Jsonb"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "bc715f74c2cb3be39bda115477b19d4579b6d850533a545dbab726ee19f848ae": {
     "query": "SELECT owner_id FROM interior_ref_lists WHERE id = $1",
     "describe": {
@@ -1869,57 +1909,6 @@
         "Left": [
           "Int4",
           "Jsonb"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "d0fa0c685793a3703903f397819619c01738bbbed7dbfe100cfa2b88fc9ed59b": {
-    "query": "SELECT id, shop_id, owner_id, created_at, updated_at,\n                    ref_list as \"ref_list: Json<Vec<InteriorRef>>\" FROM interior_ref_lists\n                LIMIT $1\n                OFFSET $2",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 1,
-          "name": "shop_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 2,
-          "name": "owner_id",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 3,
-          "name": "created_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 4,
-          "name": "updated_at",
-          "type_info": "Timestamp"
-        },
-        {
-          "ordinal": 5,
-          "name": "ref_list: Json<Vec<InteriorRef>>",
-          "type_info": "Jsonb"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8"
         ]
       },
       "nullable": [
@@ -2130,6 +2119,62 @@
         false,
         false,
         false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "f7d2a99611b794727aa36349715839f07509bcf512c3d387b54e72f6ee4be7fc": {
+    "query": "SELECT id, shop_id, owner_id, created_at, updated_at,\n                ref_list as \"ref_list: Json<Vec<InteriorRef>>\",\n                shelves as \"shelves: Json<Vec<Shelf>>\" FROM interior_ref_lists\n            WHERE shop_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "shop_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "owner_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 4,
+          "name": "updated_at",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 5,
+          "name": "ref_list: Json<Vec<InteriorRef>>",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 6,
+          "name": "shelves: Json<Vec<Shelf>>",
+          "type_info": "Jsonb"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": [
         false,
         false,
         false,
