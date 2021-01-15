@@ -64,7 +64,7 @@ pub fn from_anyhow(error: anyhow::Error) -> HttpApiProblem {
                         .set_detail("Owner does not exist");
                     } else if code == "23503"
                         && (constraint == "interior_ref_lists_shop_id_fkey"
-                            || constraint == "merchandise_lists_owner_id_fkey"
+                            || constraint == "merchandise_lists_shop_id_fkey"
                             || constraint == "transactions_shop_id_fkey")
                     {
                         // foreign_key_violation
