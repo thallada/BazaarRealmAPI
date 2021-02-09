@@ -21,6 +21,7 @@ pub struct Merchandise {
     pub form_type: u32,
     pub is_food: bool,
     pub price: u32,
+    pub keywords: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -61,6 +61,7 @@ pub fn from_anyhow(error: anyhow::Error) -> HttpApiProblem {
                         return HttpApiProblem::with_title_and_type_from_status(
                             StatusCode::BAD_REQUEST,
                         )
+                        // TODO: better message when this is triggered by a non-cascading DELETE
                         .set_detail("Owner does not exist");
                     } else if code == "23503"
                         && (constraint == "interior_ref_lists_shop_id_fkey"
