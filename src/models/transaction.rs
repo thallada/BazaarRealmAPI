@@ -22,6 +22,7 @@ pub struct Transaction {
     pub is_sell: bool,
     pub quantity: i32,
     pub amount: i32,
+    pub keywords: Vec<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -39,6 +40,7 @@ pub struct PostedTransaction {
     pub is_sell: bool,
     pub quantity: i32,
     pub amount: i32,
+    pub keywords: Vec<String>,
 }
 
 impl Transaction {
@@ -71,8 +73,8 @@ impl Transaction {
             Self,
             "INSERT INTO transactions
             (shop_id, owner_id, mod_name, local_form_id, name, form_type, is_food, price,
-             is_sell, quantity, amount, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now(), now())
+             is_sell, quantity, amount, keywords, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, now(), now())
             RETURNING *",
             transaction.shop_id,
             transaction.owner_id,
@@ -85,6 +87,7 @@ impl Transaction {
             transaction.is_sell,
             transaction.quantity,
             transaction.amount,
+            &transaction.keywords,
         )
         .fetch_one(db)
         .await?)

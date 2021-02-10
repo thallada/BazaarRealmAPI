@@ -9,7 +9,8 @@
       "quantity": 1,
       "form_type": 32,
       "is_food": false,
-      "price": 1
+      "price": 1,
+      "keywords": ["VendorItemMisc"]
     },
     {
       "mod_name": "Skyrim.esm",
@@ -18,7 +19,8 @@
       "quantity": 2,
       "form_type": 23,
       "is_food": false,
-      "price": 2
+      "price": 2,
+      "keywords": ["VendorItemScroll"]
     },
     {
       "mod_name": "Skyrim.esm",
@@ -27,7 +29,8 @@
       "quantity": 3,
       "form_type": 46,
       "is_food": true,
-      "price": 3
+      "price": 3,
+      "keywords": ["VendorItemIngredient"]
     },
     {
       "mod_name": "Skyrim.esm",
@@ -36,7 +39,8 @@
       "quantity": 4,
       "form_type": 41,
       "is_food": false,
-      "price": 4
+      "price": 4,
+      "keywords": ["VendorItemWeapon"]
     }
   ]
 }

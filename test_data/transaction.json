@@ -8,5 +8,6 @@
   "price": 100,
   "is_sell": false,
   "quantity": 1,
-  "amount": 100
+  "amount": 100,
+  "keywords": ["VendorItemMisc"]
 }

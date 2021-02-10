@@ -240,6 +240,7 @@ impl MerchandiseList {
         is_food: bool,
         price: i32,
         quantity_delta: i32,
+        keywords: &[String],
     ) -> Result<Self> {
         let add_item = json!([{
             "mod_name": mod_name,
@@ -249,6 +250,7 @@ impl MerchandiseList {
             "form_type": form_type,
             "is_food": is_food,
             "price": price,
+            "keywords": keywords,
         }]);
         Ok(sqlx::query_as!(
             Self,

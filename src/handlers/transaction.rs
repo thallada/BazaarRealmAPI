@@ -142,6 +142,7 @@ pub async fn create(
         saved_transaction.is_food,
         saved_transaction.price,
         quantity_delta,
+        &saved_transaction.keywords,
     )
     .await
     .map_err(reject_anyhow)?;

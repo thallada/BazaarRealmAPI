@@ -49,6 +49,7 @@ CREATE TABLE "transactions" (
     "is_sell" BOOLEAN NOT NULL,
     "quantity" INTEGER NOT NULL,
     "amount" INTEGER NOT NULL,
+    "keywords" TEXT[] NOT NULL DEFAULT '{}',
     "created_at" timestamp(3) NOT NULL,
     "updated_at" timestamp(3) NOT NULL
 );
