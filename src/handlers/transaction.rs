@@ -1,13 +1,14 @@
 use anyhow::{anyhow, Result};
 use http::StatusCode;
+use http_api_problem::HttpApiProblem;
 use hyper::body::Bytes;
 use mime::Mime;
 use uuid::Uuid;
 use warp::reply::{with_header, with_status};
-use warp::{Rejection, Reply};
+use warp::{reject, Rejection, Reply};
 
 use crate::caches::{CachedResponse, CACHES};
-use crate::models::{ListParams, MerchandiseList, PostedTransaction, Transaction};
+use crate::models::{ListParams, MerchandiseList, PostedTransaction, Shop, Transaction};
 use crate::problem::reject_anyhow;
 use crate::Environment;
 
@@ -128,9 +129,22 @@ pub async fn create(
     let saved_transaction = Transaction::create(transaction, &mut tx)
         .await
         .map_err(reject_anyhow)?;
-    let quantity_delta = match saved_transaction.is_sell {
-        true => saved_transaction.quantity,
-        false => saved_transaction.quantity * -1,
+    if !Shop::accepts_keywords(
+        &mut tx,
+        saved_transaction.shop_id,
+        &saved_transaction.keywords,
+    )
+    .await
+    .map_err(reject_anyhow)?
+    {
+        return Err(reject::custom(
+            HttpApiProblem::with_title_and_type_from_status(StatusCode::BAD_REQUEST)
+                .set_detail("Shop does not accept that kind of merchandise"),
+        ));
+    }
+    let (quantity_delta, shop_gold_delta) = match saved_transaction.is_sell {
+        true => (saved_transaction.quantity, saved_transaction.price * -1),
+        false => (saved_transaction.quantity * -1, saved_transaction.price),
     };
     let updated_merchandise_list = MerchandiseList::update_merchandise_quantity(
         &mut tx,
@@ -146,6 +160,9 @@ pub async fn create(
     )
     .await
     .map_err(reject_anyhow)?;
+    Shop::update_gold(&mut tx, saved_transaction.shop_id, shop_gold_delta)
+        .await
+        .map_err(reject_anyhow)?;
     tx.commit()
         .await
         .map_err(|error| reject_anyhow(anyhow!(error)))?;
@@ -184,10 +201,21 @@ pub async fn create(
         CACHES.list_transactions_by_shop_id_bin.clear().await;
         CACHES.list_merchandise_lists.clear().await;
         CACHES.list_merchandise_lists_bin.clear().await;
+        CACHES
+            .shop
+            .delete_response(updated_merchandise_list.shop_id)
+            .await;
+        CACHES
+            .shop_bin
+            .delete_response(updated_merchandise_list.shop_id)
+            .await;
+        CACHES.list_shops.clear().await;
+        CACHES.list_shops_bin.clear().await;
     });
     Ok(reply)
 }
 
+// Does NOT reverse the transaction side-effects!
 pub async fn delete(
     id: i32,
     api_key: Option<Uuid>,
