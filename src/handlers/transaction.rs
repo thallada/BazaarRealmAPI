@@ -139,6 +139,7 @@ pub async fn create(
     {
         return Err(reject::custom(
             HttpApiProblem::with_title_and_type_from_status(StatusCode::BAD_REQUEST)
+                .set_title("Unacceptable Merchandise Type")
                 .set_detail("Shop does not accept that kind of merchandise"),
         ));
     }
